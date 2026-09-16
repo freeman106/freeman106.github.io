@@ -89,8 +89,16 @@ const INTERACTIVE_SLUG = 'agent24';
   .prose :global(li) {
     max-width: 68ch;
   }
+  /* 본문 표는 자기 컨테이너 안에서만 가로 스크롤한다. */
   .prose :global(table) {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
     margin: var(--space-4) 0 var(--space-6);
+  }
+  .prose :global(table th),
+  .prose :global(table td) {
+    white-space: nowrap;
   }
   .prose :global(.decision + .decision) {
     margin-top: var(--space-2);

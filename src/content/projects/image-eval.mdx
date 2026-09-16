@@ -61,7 +61,7 @@ todos:
     '사전학습 백본 여러 개에 회귀 헤드를 붙여 같은 라벨로 비교한 뒤 전환',
   ]}
   choice="백본 비교로 전환했다."
-  why="예측이 어긋난 이미지를 직접 보고, NIMA의 사전학습 데이터 기준이 식당 사진의 담음새·구도 기준과 맞지 않는다고 진단했다. ResNet50V2·InceptionV3·InceptionResNetV2·EfficientNetV2B0를 Keras에서 비교하고, 이후 PyTorch/timm으로 옮겨 EfficientNet과 ConvNeXt 계열을 다시 비교했다. 입력을 224에서 384로 키우자 전체 오차와 점수별 오차가 함께 개선돼 384 입력을 필수로 두었다."
+  why="예측이 어긋난 이미지를 직접 보고, NIMA의 사전학습 데이터 기준이 식당 사진의 담음새·구도 기준과 맞지 않는다고 진단했다. ResNet50V2 · InceptionV3 · InceptionResNetV2 · EfficientNetV2B0를 Keras에서 비교하고, 이후 PyTorch/timm으로 옮겨 EfficientNet과 ConvNeXt 계열을 다시 비교했다. 입력을 224에서 384로 키우자 전체 오차와 점수별 오차가 함께 개선돼 384 입력을 필수로 두었다."
   outcome="ConvNeXt V2-Base(384)를 백본 동결 없이 전체 파인튜닝하는 회귀 모델로 정했다. 실험 환경은 AWS EC2에 두었다."
 />
 

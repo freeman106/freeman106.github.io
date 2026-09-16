@@ -55,7 +55,7 @@ const { title, context, alternatives, choice, why, outcome } = Astro.props;
   }
   dl > div {
     display: grid;
-    grid-template-columns: 96px 1fr;
+    grid-template-columns: 96px minmax(0, 1fr);
     gap: var(--space-3);
   }
   dt {
@@ -63,6 +63,7 @@ const { title, context, alternatives, choice, why, outcome } = Astro.props;
   }
   dd {
     margin: 0;
+    min-width: 0;
     font-size: 15px;
   }
   dd ul {

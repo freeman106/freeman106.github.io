@@ -111,7 +111,7 @@ const timeline = [
   }
   .timeline li {
     display: grid;
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
     gap: var(--space-4);
     padding: var(--space-3) 0;
     border-bottom: 1px solid var(--line);
@@ -132,7 +132,7 @@ const timeline = [
   }
   .stack > div {
     display: grid;
-    grid-template-columns: 160px 1fr;
+    grid-template-columns: 160px minmax(0, 1fr);
     gap: var(--space-4);
   }
   .stack dd {

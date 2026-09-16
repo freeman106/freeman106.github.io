@@ -25,8 +25,10 @@ const TARGETS = {
   skt: {
     route: '/pdf/skt',
     file: '김환욱_포트폴리오_SKT.pdf',
-    toc: ['image-eval', 'agent24', 'debate', 'gsm8k-dpo', 'hans', 'cloud-cicd', 'rl-timing', 'review-gen', 'recsys'],
-    maxPages: 25,
+    toc: ['image-eval', 'agent24', 'gsm8k-dpo', 'debate', 'hans', 'cloud-cicd'],
+    maxPages: 14,
+    /** PDF 안의 클릭 링크가 이 접두어로 시작해야 한다. 로컬 주소가 섞이면 실패. */
+    allowedLinkPrefixes: ['https://freeman106.github.io/', 'https://github.com/', 'https://huggingface.co/'],
   },
 };
 
@@ -80,11 +82,14 @@ const PDF_OPTS = {
 async function pageTexts(buffer) {
   const doc = await getDocument({ data: new Uint8Array(buffer), useSystemFonts: true }).promise;
   const texts = [];
+  const links = [];
   for (let i = 1; i <= doc.numPages; i++) {
-    const content = await (await doc.getPage(i)).getTextContent();
+    const page = await doc.getPage(i);
+    const content = await page.getTextContent();
     texts.push(content.items.map((it) => it.str ?? '').join(''));
+    for (const a of await page.getAnnotations()) if (a.url) links.push({ page: i, url: a.url });
   }
-  return { numPages: doc.numPages, texts };
+  return { numPages: doc.numPages, texts, links };
 }
 
 const browser = await chromium.launch();
@@ -102,7 +107,7 @@ try {
   const pageOf = {};
   for (const slug of target.toc) {
     const needle = `/projects/${slug}`;
-    const idx = texts.findIndex((t, i) => i >= 2 && t.includes(needle)); // 표지·목차 이후부터
+    const idx = texts.findIndex((t, i) => i >= 1 && t.includes(needle)); // 표지 이후부터
     pageOf[slug] = idx >= 0 ? idx + 1 : null;
   }
   await page.evaluate((map) => {
@@ -118,7 +123,7 @@ try {
   const out = path.join(OUT_DIR, target.file);
   writeFileSync(out, buffer);
 
-  const { numPages, texts: finalTexts } = await pageTexts(buffer);
+  const { numPages, texts: finalTexts, links } = await pageTexts(buffer);
   const kb = Math.round(buffer.length / 1024);
   console.log(`\n${path.relative(ROOT, out)}`);
   console.log(`쪽수 ${numPages} · 용량 ${kb >= 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB'}`);
@@ -128,6 +133,14 @@ try {
   if (numPages > target.maxPages) console.warn(`경고: ${target.maxPages}쪽을 넘었습니다 (${numPages}쪽)`);
   const blank = finalTexts.map((t, i) => (t.trim().length < 3 ? i + 1 : null)).filter(Boolean);
   if (blank.length) console.warn(`경고: 텍스트가 거의 없는 쪽 — ${blank.join(', ')}`);
+  // 클릭 링크의 실제 대상 검사. 화면에 보이는 주소와 별개로 annotation 의 URL 을 본다.
+  const bad = links.filter((l) => !(target.allowedLinkPrefixes ?? []).some((pre) => l.url.startsWith(pre)));
+  console.log(`링크 ${links.length}개 (${[...new Set(links.map((l) => l.url))].length}종)`);
+  if (bad.length) {
+    console.error('오류: 허용되지 않은 링크 대상');
+    for (const b of bad) console.error(`  p.${b.page} ${b.url}`);
+    process.exitCode = 1;
+  }
   await ctx.close();
 } finally {
   await browser.close();

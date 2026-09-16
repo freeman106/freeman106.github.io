@@ -1,433 +1,408 @@
 ---
 /**
- * SKT 제출용 포트폴리오 PDF 의 원본 페이지. scripts/pdf.mjs 가 이 페이지를 A4 로 렌더한다.
- * 검색·sitemap 에서 제외한다. 프로젝트 순서와 전문/요약 구분은 아래 ORDER 에서 정한다.
+ * SKT 제출용 포트폴리오 PDF 원본 (13쪽 안팎). scripts/pdf.mjs 가 A4 로 렌더한다.
+ * 사이트 상세 페이지와 별개로, 성과와 근거를 앞에 두고 설명은 압축한 판이다.
+ * 검색·sitemap 제외. 링크는 전부 공개 절대 주소.
  */
-import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import ProjectMeta from '../../components/ProjectMeta.astro';
 import Diagram from '../../components/Diagram.astro';
-import Decision from '../../components/Decision.astro';
-import VideoPoster from '../../components/VideoPoster.astro';
-import EpisodeList from '../../components/EpisodeList.astro';
-import { SITE, ROLE_LABEL } from '../../lib/site';
-import { formatPeriod, formatResult } from '../../lib/format';
 
-const SITE_URL = 'https://freeman106.github.io';
-const SUBTITLE = '모델과 데이터를 이해하고, 실제 업무에 쓰이는 AI 서비스로 만드는 엔지니어';
-const ORDER = ['image-eval', 'agent24', 'debate', 'gsm8k-dpo', 'hans', 'cloud-cicd', 'rl-timing', 'review-gen', 'recsys'];
-const FULL = new Set(ORDER.slice(0, 3));
-
-const all = await getCollection('projects', ({ data }) => data.public);
-const bySlug = new Map(all.map((p) => [p.data.slug, p]));
-const items = ORDER.map((slug) => {
-  const p = bySlug.get(slug);
-  if (!p) throw new Error(`pdf/skt: 프로젝트 없음 — ${slug}`);
-  return p;
-});
-
-const full = await Promise.all(
-  items
-    .filter((p) => FULL.has(p.data.slug))
-    .map(async (p) => ({
-      p,
-      Content: (await render(p)).Content,
-      episodes: (
-        await getCollection('episodes', ({ data }) => data.public && data.project === p.data.slug)
-      ).sort((a, b) => a.data.order - b.data.order),
-    })),
-);
-
-/** MDX 본문에서 핵심 결정의 제목과 선택 문장만 뽑는다 (요약용). */
-const decisionsOf = (body: string | undefined) =>
-  [...(body ?? '').matchAll(/<Decision[\s\S]*?title="([^"]+)"[\s\S]*?choice="([^"]+)"/g)].map((m) => ({
-    title: m[1].replace(/^\d+\.\s*/, ''),
-    choice: m[2],
-  }));
-const summaries = items.filter((p) => !FULL.has(p.data.slug)).map((p) => ({ p, decisions: decisionsOf(p.body) }));
-
-const today = new Date();
-const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}`;
-const urlOf = (slug: string) => `${SITE_URL}/projects/${slug}`;
+const SITE = 'https://freeman106.github.io';
+const GH = 'https://github.com/freeman106';
+const p = (slug: string) => `${SITE}/projects/${slug}`;
+const dateLabel = (() => {
+  const d = new Date();
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+})();
 ---
 
 <Base title="포트폴리오 (제출용)" bare noindex>
   <div class="doc">
+    {/* ───────── 1. 표지 · 핵심 역량 · 대표 성과 ───────── */}
     <section class="cover">
-      <div class="cover-top">
-        <p class="mono meta">{dateLabel}</p>
-      </div>
+      <p class="mono meta">{dateLabel}</p>
       <div class="cover-main">
-        <p class="cover-name">{SITE.name} <span class="mono">{SITE.nameEn}</span></p>
+        <p class="cover-name">김환욱 <span class="mono">Hwan Uk Kim</span></p>
         <h1>포트폴리오</h1>
-        <p class="cover-sub">{SUBTITLE}</p>
+        <p class="cover-sub">모델과 데이터를 이해하고, 실제 업무에 쓰이는 AI 서비스로 만드는 엔지니어</p>
+        <p class="cover-links mono"><a href={`${SITE}/`}>{SITE}/</a> · <a href={GH}>{GH}</a></p>
       </div>
-      <div class="cover-links mono">
-        <p>{SITE_URL}/</p>
-        <p>{SITE.github}</p>
-      </div>
+
+      <h2>핵심 역량</h2>
+      <ul class="skills">
+        <li><strong>모델 · 데이터.</strong> 현업의 판단 기준을 라벨과 손실 설계로 옮기고, 학습 실패의 원인을 데이터까지 역추적해 고친다. (이미지 평가, GSM8K)</li>
+        <li><strong>에이전트 · 시스템.</strong> 에이전트의 권한을 프롬프트가 아니라 툴 노출과 데이터 계약으로 제한하고, 개발과 배포가 같은 코드를 쓰게 만든다. (AGENT24, Hans)</li>
+        <li><strong>평가 · 검증.</strong> 정확도 하나가 아니라 전환·편향 지표를 설계하고, 원본 기록을 재집계해 결과를 확인한다. (다중 에이전트 토론)</li>
+      </ul>
+
+      <h2>대표 성과</h2>
+      <table class="hl">
+        <thead><tr><th>프로젝트</th><th>성과</th><th class="r">쪽</th></tr></thead>
+        <tbody>
+          <tr><td>식당 이미지 자동 평가</td><td>주당 약 7시간의 전수 수동 검수를 상위 후보 확인으로 축소 · 백본 6종 비교 뒤 weighted MSE 모델 채택</td><td class="r mono" data-toc="image-eval"></td></tr>
+          <tr><td>AGENT24 지식그래프 에이전트</td><td>Best Creative Agent 상 (4인 · 24시간) · 에이전트 코어 · 데이터 계약 · 배포 담당</td><td class="r mono" data-toc="agent24"></td></tr>
+          <tr><td>GSM8K 선호 데이터 · DPO</td><td>100문항 정확도 0.51 → 0.60 · 붕괴 원인을 선호 데이터에서 찾아 재설계</td><td class="r mono" data-toc="gsm8k-dpo"></td></tr>
+          <tr><td>다중 에이전트 토론 연구</td><td>10,800개 기록으로 정답→오답 전환 측정 · 프롬프트 한 줄로 197 → 166회</td><td class="r mono" data-toc="debate"></td></tr>
+          <tr><td>Hans 개인 AI 비서</td><td>외부 API 6종 브리핑 · 모델 3개 라우팅 · 재시도와 실패 알림 공통화</td><td class="r mono" data-toc="hans"></td></tr>
+          <tr><td>클라우드 · RL · 리뷰 생성 · 추천</td><td>요약과 링크</td><td class="r mono" data-toc="cloud-cicd"></td></tr>
+        </tbody>
+      </table>
+      <p class="meta">각 프로젝트의 전문, 코드, 리포트는 사이트에 있다. 이 문서는 지원서에 적은 경력·경험의 범위 안에서 정리했다.</p>
     </section>
 
-    <section class="toc">
-      <h2>목차</h2>
-      <ol>
-        {
-          items.map((p, i) => (
-            <li>
-              <span class="toc-n mono">{i + 1}</span>
-              <span class="toc-t">
-                {p.data.title}
-                <span class="meta"> {FULL.has(p.data.slug) ? '' : '· 요약'}</span>
-              </span>
-              <span class="toc-dots" />
-              <span class="toc-p mono" data-toc={p.data.slug}></span>
-            </li>
-          ))
-        }
-      </ol>
-      <p class="meta toc-note">각 프로젝트의 전문과 코드·리포트 링크는 {SITE_URL}/ 에 있다. 이 문서는 지원서에 적은 경력·경험의 범위 안에서 정리했다.</p>
-    </section>
+    {/* ───────── 2. 이미지 평가 ───────── */}
+    <article class="project" id="image-eval">
+      <header>
+        <p class="kicker mono meta">1 · 인턴 프로젝트 · 뽈레 · 2025.03 – 2025.06 · 1인 개발</p>
+        <h1>식당 이미지 자동 평가</h1>
+        <p class="url mono"><a href={p('image-eval')}>{p('image-eval')}</a></p>
+        <p class="lead">운영팀이 손으로 고르던 식당 대표 사진을, 도메인 기준으로 학습한 미적 점수 회귀 모델로 선별한다.</p>
+      </header>
+      <div class="kpi">
+        <div><span class="v">주 약 7시간 → 상위 후보 확인</span><span class="k">사람의 검수 범위. 전수 검수에서 상위 후보만 확인하는 구조로</span></div>
+        <div><span class="v">전수 자동 평가 · 수십 초</span><span class="k">모델 추론. 전체 이미지를 점수화한 뒤 후보를 올린다</span></div>
+        <div><span class="v">백본 6종 → ConvNeXt V2 + weighted MSE</span><span class="k">같은 라벨·설정에서 비교해 채택</span></div>
+      </div>
+      <p><strong>역할.</strong> 검수 기준은 마케팅·운영팀과 함께 정했다. 라벨링·재검수 어드민 화면, 학습 데이터 구축, 백본 비교 실험, 모델 학습·평가, 웹 서버 추론 연동은 단독으로 수행했다.</p>
+      <Diagram name="pdf-image-eval.svg" caption="업무 흐름. 실선 상자가 단독 구현, 점선은 공동 정의." />
+      <p><strong>문제.</strong> 사진의 좋고 나쁨은 화질이 아니라 담음새와 구도 같은 도메인 기준으로 정해진다. 범용 미적 평가 모델을 그대로 쓸 수 없었고, 고득점(4~5점) 라벨이 전체의 13.6%뿐이어서 평균 근처만 맞히는 모델이 나오기 쉬운 조건이었다.</p>
 
-    {
-      full.map(({ p, Content, episodes }, i) => (
-        <article class="project" id={p.data.slug}>
-          <header>
-            <p class="kicker mono meta">{i + 1} / 전문</p>
-            <h1>{p.data.title}</h1>
-            <p class="url mono">{urlOf(p.data.slug)}</p>
-            <p class="lead">{p.data.oneLiner}</p>
-          </header>
-          <ProjectMeta project={p} />
-          {p.data.diagram && (
-            <Diagram name={p.data.diagram} caption="아키텍처. 박스는 실제 코드의 파일·모듈에 대응한다. 점선은 저장소 밖의 외부 요소." />
-          )}
-          <div class="prose">
-            <Content components={{ Decision, Video: VideoPoster }} />
-          </div>
-          {episodes.length > 0 && <EpisodeList episodes={episodes} open />}
-        </article>
-      ))
-    }
+      <h2>핵심 판단</h2>
+      <div class="dec">
+        <h3>1. 모델보다 검수 기준과 도구를 먼저 만들었다</h3>
+        <p>기준이 사람마다 달라 그대로 라벨링하면 모델이 무엇을 배울지 알 수 없었다. 운영팀의 검수 과정을 보고 기준을 합의한 뒤, 1건씩 순차 평가하고 자동으로 넘어가는 어드민 흐름과 모델 평가 → 재검수 → 학습 데이터 반영 루프를 설계했다. 이후 실험은 전부 이 라벨 위에서 진행됐다.</p>
+        <h3>2. 범용 모델(NIMA)을 버리고 백본을 비교했다</h3>
+        <p>NIMA는 EMD 손실로 학습해도 변동이 컸고 예측이 어긋난 사진을 보면 사전학습 기준이 식당 사진과 맞지 않았다. Keras에서 4종, PyTorch/timm으로 옮겨 6종을 같은 라벨로 비교했고, 입력을 224에서 384로 키우자 전체·구간별 오차가 함께 개선돼 384를 필수로 두었다.</p>
+        <h3>3. 평균 오차 대신 대표 사진 선별 목적에 맞춰 손실을 골랐다</h3>
+        <p>오버샘플링은 같은 이미지를 반복 노출해 소수 샘플을 암기하게 했고 ConvNeXt 계열에서는 효과가 없거나 과적합을 냈다. 4점 ×2, 5점 ×3의 weighted MSE는 반복 없이 고득점 샘플의 가중치 총량 비중을 13.6%에서 26.3%로 키운다. 전체 오차가 조금 나빠져도 4~5점 구간이 좋아지는 쪽을 최종으로 택했다.</p>
+      </div>
 
-    {
-      summaries.map(({ p, decisions }, i) => (
-        <article class="project summary" id={p.data.slug}>
-          <header>
-            <p class="kicker mono meta">{i + 4} / 요약</p>
-            <h1>{p.data.title}</h1>
-            <p class="url mono">{urlOf(p.data.slug)}</p>
-            <p class="lead">{p.data.oneLiner}</p>
-          </header>
-          <dl class="sm">
-            <div>
-              <dt>기간</dt>
-              <dd class="mono">{formatPeriod(p.data.period) || '—'}</dd>
-            </div>
-            <div>
-              <dt>팀 · 역할</dt>
-              <dd>{p.data.team.size === 1 ? '1인' : `${p.data.team.size}인`} · {p.data.team.role}</dd>
-            </div>
-            <div>
-              <dt>기여</dt>
-              <dd>{p.data.team.contribution}</dd>
-            </div>
-            <div>
-              <dt>완성 범위</dt>
-              <dd>{p.data.scope}</dd>
-            </div>
-            {p.data.result.length > 0 && (
-              <div>
-                <dt>결과</dt>
-                <dd>
-                  <ul class="res">
-                    {p.data.result.map((r) => (
-                      <li>
-                        <span>{r.label}</span>
-                        {r.value !== undefined && <span class="mono v">{formatResult(r)}</span>}
-                        {r.note && <span class="meta note">{r.note}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            )}
-            {decisions.length > 0 && (
-              <div>
-                <dt>핵심 결정</dt>
-                <dd>
-                  <ul class="dec">
-                    {decisions.map((d) => (
-                      <li>
-                        <strong>{d.title}</strong> — {d.choice}
-                      </li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            )}
-            <div>
-              <dt>스택</dt>
-              <dd class="mono meta">{p.data.stack.join(' · ')}</dd>
-            </div>
-            <div>
-              <dt>분야</dt>
-              <dd class="mono meta">{p.data.roles.map((r) => ROLE_LABEL[r]).join(' · ')}</dd>
-            </div>
-          </dl>
-        </article>
-      ))
-    }
+      <h2>근거</h2>
+      <div class="cols">
+        <div>
+          <p class="cap"><strong>초기 모델의 점수별 오차</strong> (Keras 단계 · InceptionResNetV2 초기 run · RMSE)</p>
+          <table>
+            <thead><tr><th>점수</th><th class="r">1</th><th class="r">2</th><th class="r">3</th><th class="r">4</th><th class="r">5</th></tr></thead>
+            <tbody><tr><td>RMSE</td><td class="r">1.02</td><td class="r">0.52</td><td class="r">0.52</td><td class="r">1.13</td><td class="r">1.80</td></tr></tbody>
+          </table>
+          <p class="meta">라벨이 많은 2~3점은 맞히고 4~5점은 두세 배 틀렸다. 손실 가중치 결정의 출발점.</p>
+        </div>
+        <div>
+          <p class="cap"><strong>백본 비교</strong> (PyTorch/timm · 동일 라벨·설정 · 일반 MSE)</p>
+          <table>
+            <thead><tr><th>백본</th><th class="r">MAE</th><th class="r">RMSE</th></tr></thead>
+            <tbody>
+              <tr><td>efficientnet_b0</td><td class="r">0.629</td><td class="r">0.813</td></tr>
+              <tr><td>efficientnet_b2</td><td class="r">0.587</td><td class="r">0.790</td></tr>
+              <tr><td>convnext_tiny</td><td class="r">0.551</td><td class="r">0.725</td></tr>
+              <tr><td>convnext_small</td><td class="r">0.543</td><td class="r">0.727</td></tr>
+              <tr><td>convnextv2_base_384</td><td class="r">0.530</td><td class="r">0.706</td></tr>
+              <tr><td>convnext_base_384</td><td class="r">0.527</td><td class="r">0.696</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="cap"><strong>weighted MSE 적용 전후</strong> (ConvNeXt V2-Base 384 · 학습 기록의 비교. 구간별 수치는 로그로 남기지 않아 방향만 적는다)</p>
+      <table>
+        <thead><tr><th>항목</th><th>일반 MSE → weighted MSE</th><th>오버샘플링을 더한 경우</th></tr></thead>
+        <tbody>
+          <tr><td>전체 MAE · RMSE</td><td>소폭 증가</td><td rowspan="3">ConvNeXt 계열은 추가 효과 없음 또는 저하 (EfficientNet 계열 일부만 시너지)</td></tr>
+          <tr><td>1~3점 구간 오차</td><td>소폭 증가</td></tr>
+          <tr><td>4~5점 예측평균 · 오차</td><td><strong>크게 개선</strong></td></tr>
+        </tbody>
+      </table>
+      <p class="cap"><strong>입력 해상도 224 → 384</strong> (RMSE)</p>
+      <table class="narrow">
+        <thead><tr><th>백본</th><th class="r">224</th><th class="r">384</th></tr></thead>
+        <tbody>
+          <tr><td>convnext_base</td><td class="r">0.724</td><td class="r">0.696</td></tr>
+          <tr><td>convnextv2_base</td><td class="r">0.728</td><td class="r">0.706</td></tr>
+        </tbody>
+      </table>
+      <p class="meta note">한계: 학습 데이터가 한식에 치우쳐 양식·카페 업종의 평가는 약하다. 4~5점 라벨의 절대 수가 적어 손실 가중치는 완화책이다. 어드민과 재검수 루프 코드는 회사 저장소에 있다.</p>
+    </article>
+
+    {/* ───────── 3. AGENT24 ───────── */}
+    <article class="project" id="agent24">
+      <header>
+        <p class="kicker mono meta">2 · 해커톤 · YAI × OpenAI AGENT24 · 2026.08 · 4인 팀 · 24시간</p>
+        <h1>AGENT24 지식그래프 학습 에이전트</h1>
+        <p class="url mono"><a href={p('agent24')}>{p('agent24')}</a></p>
+        <p class="lead">강의안을 넣으면 에이전트가 지식그래프를 세우고, 학습 대화를 넣으면 학생이 막힌 지점을 대화 원문 근거와 함께 표시하는 학습 도우미.</p>
+      </header>
+      <div class="kpi">
+        <div><span class="v">Best Creative Agent 상</span><span class="k">4인 팀 · 24시간 해커톤 결과물</span></div>
+        <div><span class="v">에이전트 코어 · 계약 · 배포</span><span class="k">내 담당. 그래프 엔진 · 프론트 · 노트 프롬프트는 팀원</span></div>
+        <div><span class="v">키 없이 4인 병렬 개발</span><span class="k">3층 계약 · 검사 4종 · 실행 기록 픽스처</span></div>
+      </div>
+      <p><strong>직접 구현한 범위.</strong> OpenAI Agents SDK 기반 에이전트 루프와 툴 권한 설계, 그래프 상태·툴 시그니처·스트림 이벤트의 3층 데이터 계약과 자동 검사, 모든 실행 이벤트의 JSONL 기록, Node API 서버와 해커톤 이후 배포 전환.</p>
+      <figure class="shot">
+        <img src="/pdf/agent24-graph.jpg" alt="지식그래프 화면" />
+        <figcaption class="meta">지식그래프 화면. 강의안에서 만든 개념 노드와 관계 위에, 학습 대화에서 새로 생긴 개념과 막힌 지점(붉은 마커)이 얹힌다. 오른쪽은 에이전트의 툴 호출·판단 근거 스트림.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="/pdf/agent24-note.jpg" alt="노트 화면" />
+        <figcaption class="meta">노트 화면. 노드 문서를 이어 붙인 노트에 약점 코멘트가 붙고, 대화에서 실제로 한 말이 근거로 인용된다.</figcaption>
+      </figure>
+      <p class="mono links"><a href="https://github.com/freeman106/graph_agent">코드 github.com/freeman106/graph_agent</a> · <a href={`${SITE}/media/agent24-demo.mp4`}>데모 영상 30초</a></p>
+
+      <h2>핵심 설계</h2>
+      <div class="dec">
+        <h3>1. 권한은 프롬프트가 아니라 툴 노출로</h3>
+        <p>강의안 실행만 단원·소주제를 만들 수 있어야 했다. "만들지 마라"는 지시 대신 실행 종류별로 툴 목록을 분리해 대화 실행에는 생성 툴 자체를 주지 않았다. 단계는 강제하지 않고 목표만 주되, 상태를 바꾸기 전에 판단 근거 한 줄을 남기게 했고 스텝 상한에 걸리면 조용히 멈추지 않고 미처리 내역을 이벤트로 드러낸다. 툴 안에서는 LLM을 부르지 않는다.</p>
+        <h3>2. 4인 병렬 개발의 근거는 3층 데이터 계약</h3>
+        <p>3명이 Windows(한국어)였고 API 키는 나만 있었다. 계약을 pydantic과 TypeScript 두 벌로 두고 변경 권한을 한 명에게 묶었다. 잠금 해시 · 필드 대조 · 타입 재선언 · 픽스처 무결성 검사 4종을 Node만으로 200ms 안에 돌려 dev·agent 실행 전에 강제했고, 실행 이벤트를 JSONL로 남겨 키 없는 세 명이 실제 기록을 픽스처로 썼다. cp949 인코딩 사고는 인코딩 상수와 왕복 검사로 코드에서 막았다.</p>
+        <h3>3. 개발 서버 미들웨어를 배포 서버로, 같은 함수로</h3>
+        <p>API가 Vite 미들웨어에 붙어 있어 정적 빌드만으로는 사라졌다. 라우트 핸들러를 함수 하나로 분리해 개발(Vite)과 배포(node:http)가 같은 함수를 마운트했다. 파이썬 서브프로세스, 분 단위 실행, 파일 상태라는 제약에 맞춰 상시 구동 컨테이너를 택하고, 세션 격리는 서버가 심는 쿠키로(프론트 수정 없이), 동시 실행 상한은 프로세스 메모리 근거로, 무음 구간의 연결 끊김은 15초 heartbeat로 처리했다.</p>
+      </div>
+
+      <Diagram name="pdf-agent24.svg" caption="구조. 스트림 한 줄에 원본(raw) 층과 요약 층을 함께 실어 대회 규칙과 사람이 읽는 화면을 동시에 만족했다." />
+      <p class="meta note">한계: 그래프 상태가 세션별 JSON 파일이라 다중 인스턴스로 가려면 저장 계층이 필요하다. 배포본에는 접근 제어가 없어 시연 뒤 내리는 것을 전제로 했다. 실행 시간·메모리 실측값은 증빙을 갖춘 뒤 적는다.</p>
+    </article>
+
+    {/* ───────── 4. GSM8K ───────── */}
+    <article class="project" id="gsm8k-dpo">
+      <header>
+        <p class="kicker mono meta">3 · LLM 강의 과제 · 2026.05 · 1인</p>
+        <h1>GSM8K 선호 데이터와 DPO · SimPO</h1>
+        <p class="url mono"><a href={p('gsm8k-dpo')}>{p('gsm8k-dpo')}</a></p>
+        <p class="lead">학습 붕괴의 원인을 선호 데이터까지 역추적해 재설계하고, SimPO를 직접 구현해 DPO와 비교했다.</p>
+      </header>
+      <div class="kpi">
+        <div><span class="v">0.51 → 0.60</span><span class="k">100문항 greedy 정확도, baseline → DPO (+9%p)</span></div>
+        <div><span class="v">8.5% → 3.5%</span><span class="k">chosen이 rejected보다 짧은 선호 쌍의 비율</span></div>
+        <div><span class="v">−324자 → +553자</span><span class="k">chosen − rejected 길이 차 (평균 → 중앙값)</span></div>
+      </div>
+      <p><strong>범위.</strong> OpenRLHF + vLLM 기반 SFT → 선호 데이터 → DPO/SimPO → 평가 파이프라인이 주어졌고, 선호 데이터 생성부가 구현 과제였다. 선호 데이터 재설계, SimPO 학습기 추가, 학습 안정화 설정은 내가 확장한 부분이다.</p>
+
+      <h2>실패 출력에서 데이터로</h2>
+      <p>노트북에 남아 있던 조교의 실행 결과에서 이상 신호가 보였다. 원인을 단정하지 않고 템플릿을 그대로 재현 학습하자 정책이 다음과 같은 카운팅 패턴으로 붕괴했다.</p>
+      <pre>#### 1 2 3 4 5 6 7 8 …</pre>
+      <p>선호 쌍을 열어 보니 정답 샘플이 없는 문제에 짧은 합성 문자열을 넣는 fallback이 전체 쌍의 36%에서 발동하고 있었고, chosen 평균 415자 대 rejected 평균 739자로 정답 쪽이 324자 짧았다. 정책은 "짧을수록 좋다"를 배우고 있었다.</p>
+
+      <h2>데이터 재설계 전후</h2>
+      <table>
+        <thead><tr><th>항목</th><th>재설계 전 (템플릿)</th><th>재설계 후 (pref-v3)</th></tr></thead>
+        <tbody>
+          <tr><td>chosen</td><td>정답이 없으면 합성 문자열 주입</td><td>Qwen2.5-Math-7B-Instruct의 다단계 추론 (정답률 95.5%)</td></tr>
+          <tr><td>rejected</td><td>생성 실패 시 임의 값</td><td>베이스 Llama-3.2-1B의 실제 오답</td></tr>
+          <tr><td>길이 차 (chosen − rejected)</td><td>−324자 (평균)</td><td>+553자 (중앙값)</td></tr>
+          <tr><td>chosen이 더 짧은 쌍</td><td>8.5%</td><td>3.5%</td></tr>
+          <tr><td>규칙</td><td>—</td><td>chosen ≥ rejected − 400자 · 길이 창 80~2,400자 · 문제당 ≤2쌍 · 총 1,000쌍</td></tr>
+        </tbody>
+      </table>
+      <p class="meta">두 생성 모델은 vLLM 분산 상태 누수를 피하려고 별도 서브프로세스에서 순차 로딩했다.</p>
+
+      <h2>실험 결과</h2>
+      <div class="cols">
+        <div>
+          <table class="narrow">
+            <thead><tr><th>단계</th><th class="r">100문항 정확도</th></tr></thead>
+            <tbody>
+              <tr><td>baseline (Llama-3.2-1B)</td><td class="r">0.51</td></tr>
+              <tr><td>SFT (학습률 1e-6)</td><td class="r">0.56</td></tr>
+              <tr><td>DPO · pref-v3</td><td class="r"><strong>0.60</strong></td></tr>
+              <tr><td>SimPO · pref-v3</td><td class="r">0.55</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <ul class="tight">
+            <li>템플릿의 SFT 학습률 2e-7에서는 loss가 1.59 → 1.12로 사실상 학습되지 않았다. 1e-6으로 올린 것만으로 +0.05.</li>
+            <li>SimPO는 레퍼런스 모델 없이 직접 구현했다(길이 정규화 + 마진, KL 항과 두 번째 DeepSpeed 엔진 제거). 선호 신호가 강할수록 붕괴해 베이스 이하로 떨어졌고 DPO가 우세했다.</li>
+            <li>안정화: fp16의 NaN은 bf16 전환, max_len 32768의 과할당은 4096, DeepSpeed 로그 리다이렉션이 하트비트 타임아웃을 일으켜 비활성화.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="mono links"><a href="https://github.com/freeman106/CAS4133-assn2">코드</a> · <a href="https://huggingface.co/hwanuk16/assn2-dpo-best">DPO 모델</a> · <a href="https://huggingface.co/datasets/hwanuk16/assn2-pref-v3">선호 데이터셋 pref-v3</a></p>
+      <p class="meta note">측정 조건: 100문항 greedy 평가, 여러 run 중 최고 run. 전체 벤치마크나 일반 추론 능력의 개선으로 확대하지 않는다. SFT 0.56은 보고서 기록.</p>
+    </article>
+
+    {/* ───────── 5. 토론 연구 ───────── */}
+    <article class="project" id="debate">
+      <header>
+        <p class="kicker mono meta">4 · LLM 강의 개인 연구 · 2026.06 · 1인</p>
+        <h1>다중 에이전트 토론의 실패 조건 분석</h1>
+        <p class="url mono"><a href={p('debate')}>{p('debate')}</a></p>
+        <p class="lead">토론은 공짜인가, 언제 실패하는가. 정확도가 아니라 정답이 오답으로 바뀌는 횟수를 재고, 프롬프트 한 줄 개입의 효과를 비교했다.</p>
+      </header>
+      <div class="kpi">
+        <div><span class="v">10,800개</span><span class="k">조건별 평가 기록. 3모델 × 3라운드 × 3조건 × 400문항</span></div>
+        <div><span class="v">197 → 166회</span><span class="k">정답→오답 전환. 프롬프트 한 줄(anti_syco)만으로</span></div>
+        <div><span class="v">77.0 → 87.5%</span><span class="k">GSM8K 다수결 정확도, R0 → 최종 라운드</span></div>
+      </div>
+      <p><strong>설계.</strong> 서로 다른 벤더의 7~8B 모델 3종(Qwen2.5-7B · Llama-3.1-8B · Mistral-7B)이 GSM8K 200문항과 closed-book HotpotQA 200문항을 3라운드 토론한다. R0 독립 답변은 조건과 무관하므로 한 번만 생성해 세 조건에 공유했고, temperature 0으로 샘플링 변동을 없애 조건을 통제했다(완전한 결정론을 보장하는 것은 아니다). 모델마다 vLLM 서브프로세스를 새로 띄워 메모리를 반환했다. 지표는 라운드별 다수결 정확도, flip→correct / flip→wrong, 채택한 동료가 더 길었는지, 최종 합의가 각 모델의 첫 답과 일치하는 비율이다.</p>
+
+      <h2>결과</h2>
+      <table>
+        <thead><tr><th>조건</th><th>개입</th><th class="r">R0 다수결</th><th class="r">최종 다수결</th><th class="r">정답→오답</th><th class="r">오답→정답</th></tr></thead>
+        <tbody>
+          <tr><td>baseline</td><td>동료 추론 전체 노출</td><td class="r">46.75%</td><td class="r">52.75%</td><td class="r">197</td><td class="r">307</td></tr>
+          <tr><td>anti_syco</td><td>"자기 추론의 구체적 오류가 없으면 바꾸지 마라" 한 줄</td><td class="r">46.75%</td><td class="r"><strong>54.00%</strong></td><td class="r"><strong>166</strong></td><td class="r">290</td></tr>
+          <tr><td>length_robust</td><td>동료의 최종 답만 노출 (추론 은닉)</td><td class="r">46.75%</td><td class="r">50.00%</td><td class="r">182</td><td class="r">241</td></tr>
+        </tbody>
+      </table>
+      <ul class="tight">
+        <li>두 데이터셋 모두 다수결 정확도는 올랐다(GSM8K 77.0 → 87.5%, HotpotQA 16.5 → 18.0%). 차이는 개별 답변 전환에 있다. GSM8K는 오답→정답 213회 대 정답→오답 82회의 순이익, HotpotQA는 94회 대 115회의 순손실이다.</li>
+        <li>anti_syco는 토론이 가장 해로운 HotpotQA에서 정답→오답을 115 → 98회로 줄이고 정확도를 18.0 → 20.5%로 올렸다. 이득의 대부분은 R1에서 생기고 R2에서 잠식되는데, anti_syco만 R2 하락에 버텼다.</li>
+        <li>장문 편향 가설은 그대로 서지 않았다. 채택된 동료 답이 더 길었던 비율은 0.52, 합의를 가장 많이 지배한 Qwen(0.60)은 가장 긴 모델이 아니었다(평균 길이 Llama 722 &gt; Qwen 500 &gt; Mistral 343자).</li>
+      </ul>
+      <div class="figs">
+        <figure><img src="/pdf/debate-rounds.png" alt="라운드별 다수결 정확도" /><figcaption class="meta">라운드별 다수결 정확도. R1에서 오르고 R2에서 잠식된다.</figcaption></figure>
+        <figure><img src="/pdf/debate-flips.png" alt="데이터셋별 전환" /><figcaption class="meta">baseline의 데이터셋별 전환. HotpotQA는 오답 전환이 더 많다.</figcaption></figure>
+      </div>
+      <p class="mono links"><a href={`${SITE}/files/debate-slides.pdf`}>발표 슬라이드 PDF</a></p>
+      <p class="meta note">채점 규칙: GSM8K는 마지막 숫자를 수치로 비교. HotpotQA는 소문자·구두점·관사를 제거한 뒤 완전 일치 또는 한쪽이 다른 쪽을 포함하면 정답으로 인정한다(정규화 EM보다 느슨한 규칙). HotpotQA는 closed-book 200문항이며 length_robust는 길이뿐 아니라 추론 내용도 제거하므로 순수한 길이 효과를 분리하지 못한다. 채점을 독립적으로 재평가하지는 않았다.</p>
+    </article>
+
+    {/* ───────── 6. Hans ───────── */}
+    <article class="project" id="hans">
+      <header>
+        <p class="kicker mono meta">5 · 개인 프로젝트 · 2026.03 – 2026.08 · 1인 · 운영 중</p>
+        <h1>Hans 개인 AI 비서와 홈 서버</h1>
+        <p class="url mono"><a href={p('hans')}>{p('hans')}</a></p>
+        <p class="lead">Mac Mini에서 상시 운영하는 Telegram 기반 비서. 아침 브리핑, 일정·할일, 강의 녹음 전사와 노트 생성을 자동화한다. OpenClaw 프레임워크 위에 스킬과 스크립트를 직접 작성했다.</p>
+      </header>
+      <div class="kpi">
+        <div><span class="v">외부 API 6종</span><span class="k">Calendar/Tasks · 시세 · 날씨 · 뉴스 RSS 등을 한 브리핑으로</span></div>
+        <div><span class="v">모델 3개 라우팅</span><span class="k">작업 복잡도 · 지연 · 비용 기준</span></div>
+        <div><span class="v">5초 후 1회 재시도 + 실패 태그</span><span class="k">모든 스크립트가 같은 규칙</span></div>
+      </div>
+      <h2>모델 역할 (당시 구성)</h2>
+      <table>
+        <thead><tr><th>작업</th><th>모델</th><th>이유</th></tr></thead>
+        <tbody>
+          <tr><td>일상 대화 · 일정 조작</td><td>Claude Haiku 4.5</td><td>빠른 응답, 높은 tool-use 정확도</td></tr>
+          <tr><td>아침 브리핑 오케스트레이션</td><td>Claude Sonnet 4.6 + thinking</td><td>API 여러 개를 순서대로 부르며 템플릿 준수</td></tr>
+          <tr><td>폴백</td><td>GPT-5-mini</td><td>한 벤더 장애 시 대체</td></tr>
+        </tbody>
+      </table>
+      <p class="meta">한국어 요청이 스킬에 잘못 매칭되는 문제는 라우팅 테이블(1차)과 스킬별 트리거 키워드(2차)의 이중 라우팅으로, 프롬프트 간섭은 페르소나·사용자 컨텍스트·안전 규칙·메모리 정책을 분리해 줄였다.</p>
+      <h2>실패 처리</h2>
+      <table>
+        <thead><tr><th>상황</th><th>처리</th></tr></thead>
+        <tbody>
+          <tr><td>외부 API 실패</td><td>5초 대기 → 1회 재시도 → 그래도 실패면 [RETRY FAILED] 태그로 사용자에게 알림</td></tr>
+          <tr><td>Telegram 전송 실패</td><td>60 → 120 → 300초 backoff 재시도</td></tr>
+          <tr><td>미세먼지 측정소 매핑 실패</td><td>기본값으로 조회하고 notice 필드로 알림</td></tr>
+          <tr><td>동기화 파일 미감지</td><td>Syncthing의 임시 파일 → rename 패턴을 watchdog on_moved로 처리</td></tr>
+          <tr><td>Whisper 무음 구간 반복 · 언어 오인식</td><td>이전 텍스트 조건화 해제 + temperature 0 · 폴더명 기반 언어 매핑</td></tr>
+        </tbody>
+      </table>
+      <p><strong>전사 파이프라인.</strong> Syncthing 동기화 → watchdog 감지 → MLX Whisper 로컬 전사 → Obsidian 노트 생성.</p>
+      <p class="meta note">개인용이라 가동률·성공률은 기록하지 않았다. 모델 조합은 운영하면서 바뀌는 값이다.</p>
+    </article>
+
+    {/* ───────── 7. 요약 4건 ───────── */}
+    <article class="project" id="cloud-cicd">
+      <header>
+        <p class="kicker mono meta">6 · 요약</p>
+        <h1>클라우드 · RL · 리뷰 생성 · 추천</h1>
+      </header>
+      <div class="sum-grid">
+        <section>
+          <h3>테스트부터 인프라 배포까지 — Cloud Computing 과제</h3>
+          <p class="mono meta">2025.11 – 2025.12 · 1인 · <a href={p('cloud-cicd')}>{p('cloud-cicd')}</a></p>
+          <p>제공된 웹앱을 대상으로 GitHub Actions 워크플로 4종(test · build · deploy · destroy)과 Terraform의 Kubernetes namespace · deployment · service · config · secret 구성을 작성해 재현 가능한 배포 절차를 만들었다. 앱 자체는 제공됐고 내 변경 이력은 워크플로와 IaC에 있다.</p>
+          <p class="mono meta">GitHub Actions · Terraform · Kubernetes · Docker · AWS</p>
+        </section>
+        <section>
+          <h3>RL로 인간의 내부시계와 반응 시간 분포 모델링</h3>
+          <p class="mono meta">2025.11 · 4인 졸업 프로젝트 · <a href={p('rl-timing')}>{p('rl-timing')}</a></p>
+          <p>시간 간격 과제에서 인간의 반응 지연·조기 반응을 RL 에이전트로 재현했다. 내 담당은 pygame 수집 환경과 Gymnasium 학습 환경(관측 · 보상 · 운동 지연 분포) 구현. 인간과 에이전트의 반응 시간 분포 거리(EMD)는 Blinking 13.9ms, Flappy Bird 29.3 / 59.2ms였다. 정책 학습과 분석은 팀 공동 작업.</p>
+          <p class="mono meta">Gymnasium · PPO · LSTM · pygame · <a href={`${SITE}/files/rl-timing-poster.pdf`}>포스터</a></p>
+        </section>
+        <section>
+          <h3>식당 한줄 리뷰 생성 PoC</h3>
+          <p class="mono meta">2025.03 – 2025.06 · 뽈레 인턴 · <a href={p('review-gen')}>{p('review-gen')}</a></p>
+          <p>사용자 리뷰를 40~60자 한 줄 요약으로 생성한다. GPT-4o · GPT-4.1 · Claude Sonnet 3.7 · Gemini 2.0/2.5 등 7개 모델을 같은 조건에서 비교하고, 글자 수 준수율 등 정량 지표와 담당 임원의 Human Eval을 병행해 GPT-4.1을 채택했다. 대량 처리에서 Rate Limit 제약과 예상 시간을 팀에 먼저 설명하고 TPM 기준 동적 청킹으로 마감을 지켰다.</p>
+          <p class="mono meta">Python · LangChain · 도메인 조건 13항목 프롬프트</p>
+        </section>
+        <section>
+          <h3>맛집 추천 시스템 고도화</h3>
+          <p class="mono meta">2025.03 – 2025.06 · 뽈레 인턴 · <a href={p('recsys')}>{p('recsys')}</a></p>
+          <p>십만 명대 사용자 · 백만 건대 평가 데이터로 개인화 추천을 설계했다. 설문 선호와 실제 평가 행동의 차이를 데이터에서 확인해 행동 기반으로 방향을 바꾸고, baseline(사용자 평균 + 장소 편향) → confidence-weighted MF → 카테고리·지역 embedding Deep → MLP 잔차 Residual로 단계적으로 발전시켰다.</p>
+          <p class="mono meta">PyTorch · Matrix Factorization</p>
+        </section>
+      </div>
+      <p class="meta note">그 밖의 프로젝트와 리포트 원본은 <a href={`${SITE}/`}>{SITE}/</a> 에 있다.</p>
+    </article>
   </div>
 </Base>
 
 <style is:global>
-  /* 인쇄 전용 문서. 화면에서도 같은 조판으로 보인다. */
   .doc {
     max-width: 180mm;
     margin: 0 auto;
     padding: 12mm 0;
-    font-size: 10.5pt;
-    line-height: 1.55;
-    color: #333;
-  }
-  .doc .skip {
-    display: none;
-  }
-  .doc h1,
-  .doc h2,
-  .doc h3 {
-    break-after: avoid;
-  }
-  .doc h1 {
-    font-size: 19pt;
-  }
-  .doc h2 {
-    font-size: 13pt;
-  }
-  .doc h3 {
-    font-size: 11pt;
-  }
-  .doc .mono,
-  .doc .meta {
-    font-size: 9pt;
-  }
-  .doc p {
-    margin-bottom: 8pt;
-  }
-
-  /* 표지 · 목차 */
-  .cover {
-    height: 250mm;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    break-after: page;
-  }
-  .cover-name {
-    font-size: 13pt;
-    color: #111;
-    font-weight: 600;
-  }
-  .cover-name .mono {
-    font-weight: 400;
-    color: #6e6e6e;
-    margin-left: 4pt;
-  }
-  .cover h1 {
-    font-size: 40pt;
-    margin: 6pt 0 14pt;
-    letter-spacing: -0.02em;
-  }
-  .cover-sub {
-    font-size: 14pt;
-    color: #333;
-    max-width: 34ch;
+    font-size: 10pt;
     line-height: 1.5;
+    color: #333;
   }
-  .cover-links p {
-    margin: 0;
-    color: #444;
-  }
-  .toc {
-    break-after: page;
-  }
-  .toc h2 {
-    margin-bottom: 14pt;
-  }
-  .toc ol {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .toc li {
-    display: flex;
-    align-items: baseline;
-    gap: 8pt;
-    padding: 6pt 0;
-    border-bottom: 1px solid #e6e6e6;
-  }
-  .toc-n {
-    width: 16pt;
-    color: #6e6e6e;
-  }
-  .toc-t {
-    color: #111;
-  }
-  .toc-dots {
-    flex: 1;
-    border-bottom: 1px dotted #cfcfcf;
-    transform: translateY(-3pt);
-  }
-  .toc-p {
-    min-width: 16pt;
-    text-align: right;
-  }
-  .toc-note {
-    margin-top: 18pt;
-  }
+  .doc .skip { display: none; }
+  .doc a { color: #1d4ed8; text-decoration: none; }
+  .doc h1, .doc h2, .doc h3 { break-after: avoid; color: #111; }
+  .doc h1 { font-size: 18pt; }
+  .doc h2 { font-size: 12pt; margin: 14pt 0 6pt; }
+  .doc h3 { font-size: 10.5pt; margin: 8pt 0 3pt; }
+  .doc .mono, .doc .meta { font-size: 8.5pt; }
+  .doc p { margin: 0 0 6pt; }
+  .doc ul { margin: 0 0 6pt; padding-left: 1.1em; }
+  .doc li { margin: 0 0 3pt; }
+  .doc table { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 4pt 0 8pt; break-inside: avoid; }
+  .doc table.narrow { width: auto; }
+  .doc th, .doc td { text-align: left; vertical-align: top; padding: 3pt 8pt 3pt 0; border-bottom: 1px solid #e6e6e6; }
+  .doc th { color: #6e6e6e; font-family: var(--font-mono); font-size: 8.5pt; font-weight: 500; }
+  .doc td.r, .doc th.r { text-align: right; }
+  .doc pre { font-family: var(--font-mono); font-size: 9pt; margin: 4pt 0 8pt; padding: 6pt 0; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6; break-inside: avoid; }
+  .doc .cap { margin: 8pt 0 2pt; }
+  .doc .note { margin-top: 6pt; }
+
+  /* 표지 */
+  .cover { break-after: page; }
+  .cover-main { margin: 30mm 0 14mm; }
+  .cover-name { font-size: 13pt; color: #111; font-weight: 600; margin: 0; }
+  .cover-name .mono { font-weight: 400; color: #6e6e6e; margin-left: 4pt; }
+  .cover h1 { font-size: 36pt; margin: 4pt 0 10pt; letter-spacing: -0.02em; }
+  .cover-sub { font-size: 13pt; color: #333; max-width: 40ch; line-height: 1.5; }
+  .cover-links { margin-top: 8pt; }
+  .skills li { margin-bottom: 5pt; }
+  .hl td:first-child { color: #111; white-space: nowrap; }
+  .hl td[data-toc] { min-width: 18pt; }
 
   /* 프로젝트 */
-  .project {
-    break-before: page;
-  }
-  .project header {
-    margin-bottom: 8pt;
-  }
-  .kicker {
-    margin: 0 0 4pt;
-  }
-  .url {
-    margin: 2pt 0 8pt;
-    color: #6e6e6e;
-    font-size: 8.5pt;
-  }
-  .lead {
-    font-size: 11.5pt;
-    color: #333;
-    max-width: 68ch;
-  }
-  .project .pmeta {
-    margin-top: 8pt;
-    font-size: 10pt;
-    break-inside: avoid;
-  }
-  .project .diagram {
-    margin: 10pt 0;
-    break-inside: avoid;
-  }
-  .project .diagram-scroll {
-    overflow: visible;
-    padding: 6pt 0;
-  }
-  .project .diagram-inner {
-    min-width: 0;
-  }
-  .project .diagram svg {
-    width: 100%;
-    height: auto;
-    max-height: 150mm;
-  }
-  .project .prose h2 {
-    margin-top: 18pt;
-    margin-bottom: 6pt;
-  }
-  .project .prose h3 {
-    margin-top: 10pt;
-    margin-bottom: 4pt;
-  }
-  .project .prose p,
-  .project .prose li {
-    max-width: none;
-  }
-  .project .decision,
-  .project table,
-  .project pre,
-  .project figure,
-  .project .pmeta > div,
-  .project details {
-    break-inside: avoid;
-  }
-  .project table {
-    display: table;
-    width: auto;
-    font-size: 9.5pt;
-    margin: 6pt 0 10pt;
-  }
-  .project th,
-  .project td {
-    padding: 4pt 10pt 4pt 0;
-  }
-  .project .episodes {
-    margin-top: 16pt;
-  }
-  .project details {
-    margin: 0;
-    padding: 6pt 0;
-    border-top: 0;
-    border-bottom: 1px solid #e6e6e6;
-  }
-  .project summary {
-    pointer-events: none;
-  }
-  .project summary::after,
-  .project details[open] summary::after {
-    content: none;
-  }
-  .project .ep {
-    font-size: 10pt;
-  }
+  .project { break-before: page; }
+  .project header { margin-bottom: 8pt; }
+  .kicker { margin: 0 0 3pt; }
+  .url { margin: 2pt 0 6pt; font-size: 8pt; }
+  .lead { font-size: 11pt; color: #222; max-width: 70ch; }
+  .kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8pt; margin: 6pt 0 10pt; break-inside: avoid; }
+  .kpi > div { border-top: 1px solid #cfcfcf; padding-top: 5pt; display: flex; flex-direction: column; gap: 2pt; }
+  .kpi .v { font-family: var(--font-mono); font-size: 11pt; color: #111; font-weight: 500; }
+  .kpi .k { font-size: 8.5pt; color: #6e6e6e; line-height: 1.4; }
+  .dec p { margin-bottom: 5pt; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; align-items: start; }
+  .tight li { margin-bottom: 4pt; }
+  .links { margin: 4pt 0 6pt; }
 
-  /* 요약 */
-  .sm {
-    margin: 10pt 0 0;
-    display: grid;
-    gap: 6pt;
-  }
-  .sm > div {
-    display: grid;
-    grid-template-columns: 64pt minmax(0, 1fr);
-    gap: 8pt;
-    break-inside: avoid;
-  }
-  .sm dt {
-    color: #6e6e6e;
-    font-family: var(--font-mono);
-    font-size: 9pt;
-    padding-top: 1pt;
-  }
-  .sm dd {
-    margin: 0;
-    min-width: 0;
-  }
-  .sm .res,
-  .sm .dec {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .sm .res li {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 8pt;
-    align-items: baseline;
-  }
-  .sm .res .v {
-    color: #111;
-  }
-  .sm .res .note {
-    flex-basis: 100%;
-  }
-  .sm .dec li {
-    margin-bottom: 4pt;
-  }
-  .sm .dec strong {
-    color: #111;
-  }
+  .project .diagram { margin: 8pt 0; break-inside: avoid; }
+  .project .diagram-scroll { overflow: visible; padding: 4pt 0; border: 0; }
+  .project .diagram-inner { min-width: 0; }
+  .project .diagram svg { width: 100%; max-width: 165mm; height: auto; margin: 0 auto; display: block; }
+  .project figcaption { margin-top: 3pt; }
+
+  .shot { margin: 6pt 0 8pt; break-inside: avoid; }
+  .shot img { display: block; width: 92%; margin: 0 auto; border: 1px solid #ddd; }
+  .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0; break-inside: avoid; }
+  .figs figure { margin: 0; }
+  .figs img { width: 100%; display: block; }
+
+  .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt 14pt; }
+  .sum-grid section { break-inside: avoid; border-top: 1px solid #cfcfcf; padding-top: 6pt; }
+  .sum-grid h3 { margin-top: 0; }
+  .sum-grid p { font-size: 9.5pt; }
 
   @media print {
-    .doc {
-      max-width: none;
-      padding: 0;
-    }
+    .doc { max-width: none; padding: 0; }
   }
 </style>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 990 339.70000000000005" width="990" height="339.70000000000005" role="img" aria-labelledby="pdf-image-eval-title" data-diagram="pdf-image-eval">
+<title id="pdf-image-eval-title">식당 이미지 자동 평가 — 업무 흐름</title>
+<style>
+  .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
+  .dg-grp-l { font: 500 14.3px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
+  .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
+  .dg-node:focus { outline: none; }
+  .dg-t { font: 500 16.900000000000002px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: 14.3px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: 13.65px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#pdf-image-eval-ah); }
+  .dg-ar-d { stroke-dasharray: 4 3; }
+  .dg-al { font: 13.65px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-node { cursor: default; }
+</style>
+<defs><marker id="pdf-image-eval-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>
+<g class="dg-group" data-group="g">
+<rect class="dg-grp" x="16" y="24" width="958" height="291.70000000000005" rx="4"/>
+<text class="dg-grp-l" x="28" y="44.8">내 담당: 데이터 · 학습 · 추론 연동 · 운영 흐름 설계  (점선: 공동 정의)</text>
+</g>
+<path class="dg-ar" d="M322,111.30000000000001 H352"/>
+<path class="dg-ar" d="M622,111.30000000000001 H652"/>
+<path class="dg-ar" d="M797,164.60000000000002 V186.60000000000002 H487 V208.60000000000002"/>
+<path class="dg-ar" d="M622,252.15000000000003 H652"/>
+<path class="dg-ar dg-ar-d" d="M898.5,208.60000000000002 V164.60000000000002"/>
+<text class="dg-al" x="930" y="194.60000000000002" text-anchor="end">재학습</text>
+<g class="dg-node" id="pdf-image-eval-p-label" data-node="p-label" data-file="" data-desc="기준은 공동, 도구는 단독." tabindex="0">
+<title>검수 기준 · 1~5점 라벨 — 기준은 공동, 도구는 단독.</title>
+<rect class="dg-bx-ext" x="32" y="58" width="290" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="44" y="82.7">검수 기준 · 1~5점 라벨</text>
+<text class="dg-s" x="44" y="104.80000000000001">마케팅·운영팀과 공동 정의</text>
+<text class="dg-s" x="44" y="124.30000000000001">어드민 라벨링·재검수 화면 (내가 구현)</text>
+</g>
+<g class="dg-node" id="pdf-image-eval-p-data" data-node="p-data" data-file="" data-desc="" tabindex="0">
+<title>학습 데이터</title>
+<rect class="dg-bx" x="352" y="58" width="270" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="364" y="82.7">학습 데이터</text>
+<text class="dg-s" x="364" y="104.80000000000001">S3 이미지 수집 → Dataset</text>
+<text class="dg-s" x="364" y="124.30000000000001">384px 입력 · stratified split</text>
+</g>
+<g class="dg-node" id="pdf-image-eval-p-train" data-node="p-train" data-file="" data-desc="" tabindex="0">
+<title>학습</title>
+<rect class="dg-bx" x="652" y="58" width="290" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="664" y="82.7">학습</text>
+<text class="dg-s" x="664" y="104.80000000000001">ConvNeXt V2-Base 전체 파인튜닝</text>
+<text class="dg-s" x="664" y="124.30000000000001">weighted MSE (4점 ×2 · 5점 ×3)</text>
+<text class="dg-s" x="664" y="143.8">점수 구간별 진단</text>
+</g>
+<g class="dg-node" id="pdf-image-eval-p-infer" data-node="p-infer" data-file="" data-desc="" tabindex="0">
+<title>추론</title>
+<rect class="dg-bx" x="352" y="208.60000000000002" width="270" height="87.10000000000001" rx="3"/>
+<text class="dg-t" x="364" y="233.3">추론</text>
+<text class="dg-s" x="364" y="255.40000000000003">PhotoEvaluator 클래스</text>
+<text class="dg-s" x="364" y="274.90000000000003">Ruby 웹 서버가 상시 로드 (PyCall)</text>
+</g>
+<g class="dg-node" id="pdf-image-eval-p-ops" data-node="p-ops" data-file="" data-desc="" tabindex="0">
+<title>운영 루프</title>
+<rect class="dg-bx" x="652" y="208.60000000000002" width="290" height="87.10000000000001" rx="3"/>
+<text class="dg-t" x="664" y="233.3">운영 루프</text>
+<text class="dg-s" x="664" y="255.40000000000003">전수 자동 평가 → 상위 후보만 사람이 재검수</text>
+<text class="dg-s" x="664" y="274.90000000000003">재검수 결과를 학습 데이터에 반영</text>
+</g>
+</svg>

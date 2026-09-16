@@ -20,20 +20,21 @@ const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../sr
 const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const STYLE = `
+let FS = 1; // 글자 배율. PDF 용 압축 도식은 크게 그린다.
+const STYLE_OF = (fs) => `
   .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
-  .dg-grp-l { font: 500 11px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-grp-l { font: 500 ${11*fs}px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
   .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
   .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
   .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
   .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
   .dg-node:focus { outline: none; }
-  .dg-t { font: 500 13px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
-  .dg-s { font: 11px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
-  .dg-f { font: 10.5px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-t { font: 500 ${13*fs}px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: ${11*fs}px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: ${10.5*fs}px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
   .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#MARKER); }
   .dg-ar-d { stroke-dasharray: 4 3; }
-  .dg-al { font: 10.5px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-al { font: ${10.5*fs}px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
   .dg-node { cursor: default; }
 `;
 
@@ -54,8 +55,8 @@ function textWidth(str, size) {
 const PAD_X = 12;
 function boxHeight(b) {
   const n = (b.lines ?? []).length;
-  const content = 27 + 15 * n; // 마지막 줄 아래 여백까지
-  return Math.max(40, b.file ? content + 27 : content + 10);
+  const content = (27 + 15 * n) * FS; // 마지막 줄 아래 여백까지
+  return Math.max(40 * FS, b.file ? content + 27 * FS : content + 10 * FS);
 }
 
 /** 박스들을 세로로 쌓는다. y 를 채워 넣고 다음 y 를 돌려준다. */
@@ -126,22 +127,23 @@ function render(spec) {
   const warn = [];
   for (const b of boxes) {
     const inner = b.w - PAD_X * 2;
-    if (textWidth(b.title, 13) > inner) warn.push(`${id}/${b.id}: 제목이 넓음 "${b.title}"`);
-    for (const l of b.lines ?? []) if (textWidth(l, 11) > inner) warn.push(`${id}/${b.id}: 줄이 넓음 "${l}"`);
-    if (b.file && textWidth(b.file, 10.5) > inner) warn.push(`${id}/${b.id}: 파일명이 넓음 "${b.file}"`);
+    const fsw = spec.fontScale ?? 1;
+    if (textWidth(b.title, 13 * fsw) > inner) warn.push(`${id}/${b.id}: 제목이 넓음 "${b.title}"`);
+    for (const l of b.lines ?? []) if (textWidth(l, 11 * fsw) > inner) warn.push(`${id}/${b.id}: 줄이 넓음 "${l}"`);
+    if (b.file && textWidth(b.file, 10.5 * fsw) > inner) warn.push(`${id}/${b.id}: 파일명이 넓음 "${b.file}"`);
   }
   for (const m of warn) console.warn(`  ! ${m}`);
 
   const out = [];
   out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-labelledby="${id}-title" data-diagram="${id}">`);
   out.push(`<title id="${id}-title">${esc(title)}</title>`);
-  out.push(`<style>${STYLE.replace(/MARKER/g, `${id}-ah`)}</style>`);
+  out.push(`<style>${STYLE_OF(spec.fontScale ?? 1).replace(/MARKER/g, `${id}-ah`)}</style>`);
   out.push(`<defs><marker id="${id}-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>`);
 
   for (const g of groups) {
     out.push(`<g class="dg-group" data-group="${esc(g.id)}">`);
     out.push(`<rect class="dg-grp" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="4"/>`);
-    out.push(`<text class="dg-grp-l" x="${g.x + 12}" y="${g.y + 16}">${esc(g.label)}</text>`);
+    out.push(`<text class="dg-grp-l" x="${g.x + 12}" y="${g.y + 16 * (spec.fontScale ?? 1)}">${esc(g.label)}</text>`);
     out.push(`</g>`);
   }
 
@@ -157,13 +159,14 @@ function render(spec) {
     out.push(`<g class="dg-node" id="${id}-${esc(b.id)}" data-node="${esc(b.id)}" data-file="${esc(b.file ?? '')}" data-desc="${esc(b.desc ?? '')}" tabindex="0">`);
     out.push(`<title>${esc(b.desc ? `${b.title} — ${b.desc}` : b.title)}</title>`);
     out.push(`<rect class="${cls}" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="3"/>`);
-    out.push(`<text class="dg-t" x="${b.x + PAD_X}" y="${b.y + 19}">${esc(b.title)}</text>`);
-    let y = b.y + 36;
+    const fs = spec.fontScale ?? 1;
+    out.push(`<text class="dg-t" x="${b.x + PAD_X}" y="${b.y + 19 * fs}">${esc(b.title)}</text>`);
+    let y = b.y + 36 * fs;
     for (const line of b.lines ?? []) {
       out.push(`<text class="dg-s" x="${b.x + PAD_X}" y="${y}">${esc(line)}</text>`);
-      y += 15;
+      y += 15 * fs;
     }
-    if (b.file) out.push(`<text class="dg-f" x="${b.x + PAD_X}" y="${b.y + b.h - 9}">${esc(b.file)}</text>`);
+    if (b.file) out.push(`<text class="dg-f" x="${b.x + PAD_X}" y="${b.y + b.h - 9 * fs}">${esc(b.file)}</text>`);
     out.push(`</g>`);
   }
 
@@ -525,8 +528,91 @@ function debate() {
   return { id: 'debate', title: '다중 에이전트 토론 실험 파이프라인', w: 960, h: r3 + INSET + 24, groups, boxes, arrows };
 }
 
+
+// ─────────────────────────────────────────────────────────────
+// PDF 용 압축 도식 — 입력 → 핵심 처리 → 상태 → 출력, 내 담당을 크게
+// ─────────────────────────────────────────────────────────────
+function pdfImageEval() {
+  FS = 1.3;
+  const top = [
+    { id: 'p-label', kind: 'ext', x: 32, w: 290, title: '검수 기준 · 1~5점 라벨',
+      lines: ['마케팅·운영팀과 공동 정의', '어드민 라벨링·재검수 화면 (내가 구현)'],
+      desc: '기준은 공동, 도구는 단독.' },
+    { id: 'p-data', x: 352, w: 270, title: '학습 데이터',
+      lines: ['S3 이미지 수집 → Dataset', '384px 입력 · stratified split'],
+      desc: '' },
+    { id: 'p-train', x: 652, w: 290, title: '학습',
+      lines: ['ConvNeXt V2-Base 전체 파인튜닝', 'weighted MSE (4점 ×2 · 5점 ×3)', '점수 구간별 진단'],
+      desc: '' },
+  ];
+  const bottom = [
+    { id: 'p-infer', x: 352, w: 270, title: '추론',
+      lines: ['PhotoEvaluator 클래스', 'Ruby 웹 서버가 상시 로드 (PyCall)'],
+      desc: '' },
+    { id: 'p-ops', x: 652, w: 290, title: '운영 루프',
+      lines: ['전수 자동 평가 → 상위 후보만 사람이 재검수', '재검수 결과를 학습 데이터에 반영'],
+      desc: '' },
+  ];
+  const r1 = row(top, 24 + 34);
+  const r2 = row(bottom, r1 + 44);
+  const groups = [{ id: 'g', label: '내 담당: 데이터 · 학습 · 추론 연동 · 운영 흐름 설계  (점선: 공동 정의)', x: 16, y: 24, w: 958, h: r2 + 20 - 24 }];
+  const boxes = [...top, ...bottom];
+  const arrows = [
+    { from: 'p-label', fromSide: 'right', to: 'p-data', toSide: 'left' },
+    { from: 'p-data', fromSide: 'right', to: 'p-train', toSide: 'left' },
+    { from: 'p-train', fromSide: 'bottom', to: 'p-infer', toSide: 'top', midY: r1 + 22 },
+    { from: 'p-infer', fromSide: 'right', to: 'p-ops', toSide: 'left' },
+    { from: 'p-ops', fromSide: 'top', fromT: 0.85, to: 'p-train', toSide: 'bottom', toT: 0.85, dashed: true, label: '재학습', lx: 930, ly: r1 + 30, anchor: 'end' },
+    { d: `M352,${r2 - (r2 - r1 - 44) / 2 - 10} H200 V${r1 + 0}`, dashed: true, label: '', lx: 0, ly: 0 },
+  ];
+  // 마지막 화살표: 운영 루프의 재검수 라벨이 기준·라벨 상자로 돌아간다
+  arrows.pop();
+  const spec = { id: 'pdf-image-eval', title: '식당 이미지 자동 평가 — 업무 흐름', w: 990, h: r2 + 44, groups, boxes, arrows, fontScale: FS };
+  FS = 1;
+  return spec;
+}
+
+function pdfAgent24() {
+  FS = 1.3;
+  const top = [
+    { id: 'a-input', kind: 'ext', x: 32, w: 200, title: '입력',
+      lines: ['강의안 PDF', '학습 대화 · 공유 링크'], desc: '' },
+    { id: 'a-api', x: 262, w: 300, title: 'Node 서버 (내 담당)',
+      lines: ['API 핸들러 하나를 개발·배포가 공유', '세션 격리 · 동시 실행 상한', 'JSONL → SSE 중계 · heartbeat'], desc: '' },
+    { id: 'a-agent', x: 592, w: 366, title: 'Python 에이전트 루프 (내 담당)',
+      lines: ['목표만 부여, 단계는 강제하지 않음', '실행 종류별로 툴 노출을 분리 (권한 = 툴)', '상태 변경 전 판단 근거 기록 · 스텝 상한'], desc: '' },
+  ];
+  const mid = [
+    { id: 'a-state', kind: 'state', x: 592, w: 366, title: '그래프 상태',
+      lines: ['세션별 JSON 파일 · 툴은 조회·변경만 (LLM 호출 없음)'], desc: '' },
+  ];
+  const bottom = [
+    { id: 'a-front', kind: 'ext', x: 32, w: 300, title: '프론트 (팀원)',
+      lines: ['그래프 · 노트 · 약점 표시', 'raw / 요약 스트림 토글'], desc: '' },
+    { id: 'a-contract', x: 362, w: 596, title: '데이터 계약 3층 + 자동 검사 (내 담당)',
+      lines: ['그래프 상태 · 툴 시그니처 · 스트림 이벤트를 pydantic·TypeScript 두 벌로', '검사 4종을 dev·agent 실행 전에 강제 → 4인이 키 없이 병렬 개발'], desc: '' },
+  ];
+  const r1 = row(top, 24 + 34);
+  const r2 = row(mid, r1 + 40);
+  const r3 = row(bottom, r2 + 44);
+  const groups = [{ id: 'g', label: 'AGENT24 — 입력 → 에이전트 → 상태 → 화면. 실선 상자가 내 담당', x: 16, y: 24, w: 958, h: r3 + 20 - 24 }];
+  const boxes = [...top, ...mid, ...bottom];
+  const arrows = [
+    { from: 'a-input', fromSide: 'right', to: 'a-api', toSide: 'left' },
+    { from: 'a-api', fromSide: 'right', fromT: 0.35, to: 'a-agent', toSide: 'left', toT: 0.35 },
+    { from: 'a-agent', fromSide: 'left', fromT: 0.75, to: 'a-api', toSide: 'right', toT: 0.75, label: '실행 → 이벤트 JSONL', lx: 577, ly: r1 + 14, anchor: 'middle' },
+    { from: 'a-agent', fromSide: 'bottom', to: 'a-state', toSide: 'top' },
+    { from: 'a-api', fromSide: 'bottom', fromT: 0.3, to: 'a-front', toSide: 'top', toT: 0.7, midY: r1 + 20, label: 'SSE 스트림 (raw + 요약)', lx: 180, ly: r1 + 14 },
+    { d: `M660,${r3 - 2} V${r3 + 2}`, dashed: true },
+  ];
+  arrows.pop();
+  const spec = { id: 'pdf-agent24', title: 'AGENT24 — 구조와 담당', w: 990, h: r3 + 44, groups, boxes, arrows, fontScale: FS };
+  FS = 1;
+  return spec;
+}
+
 mkdirSync(OUT, { recursive: true });
-for (const build of [imageEval, agent24, debate]) {
+for (const build of [imageEval, agent24, debate, pdfImageEval, pdfAgent24]) {
   const spec = build();
   const file = path.join(OUT, `${spec.id}.svg`);
   writeFileSync(file, render(spec), 'utf-8');

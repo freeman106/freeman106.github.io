@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 990 447.30000000000007" width="990" height="447.30000000000007" role="img" aria-labelledby="pdf-agent24-title" data-diagram="pdf-agent24">
+<title id="pdf-agent24-title">AGENT24 — 구조와 담당</title>
+<style>
+  .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
+  .dg-grp-l { font: 500 14.3px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
+  .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
+  .dg-node:focus { outline: none; }
+  .dg-t { font: 500 16.900000000000002px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: 14.3px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: 13.65px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#pdf-agent24-ah); }
+  .dg-ar-d { stroke-dasharray: 4 3; }
+  .dg-al { font: 13.65px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-node { cursor: default; }
+</style>
+<defs><marker id="pdf-agent24-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>
+<g class="dg-group" data-group="g">
+<rect class="dg-grp" x="16" y="24" width="958" height="399.30000000000007" rx="4"/>
+<text class="dg-grp-l" x="28" y="44.8">AGENT24 — 입력 → 에이전트 → 상태 → 화면. 실선 상자가 내 담당</text>
+</g>
+<path class="dg-ar" d="M232,111.30000000000001 H262"/>
+<path class="dg-ar" d="M562,95.31 H592"/>
+<path class="dg-ar" d="M592,137.95 H562"/>
+<text class="dg-al" x="577" y="178.60000000000002" text-anchor="middle">실행 → 이벤트 JSONL</text>
+<path class="dg-ar" d="M775,164.60000000000002 V204.60000000000002"/>
+<path class="dg-ar" d="M352,164.60000000000002 V184.60000000000002 H242 V316.20000000000005"/>
+<text class="dg-al" x="180" y="178.60000000000002" text-anchor="start">SSE 스트림 (raw + 요약)</text>
+<g class="dg-node" id="pdf-agent24-a-input" data-node="a-input" data-file="" data-desc="" tabindex="0">
+<title>입력</title>
+<rect class="dg-bx-ext" x="32" y="58" width="200" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="44" y="82.7">입력</text>
+<text class="dg-s" x="44" y="104.80000000000001">강의안 PDF</text>
+<text class="dg-s" x="44" y="124.30000000000001">학습 대화 · 공유 링크</text>
+</g>
+<g class="dg-node" id="pdf-agent24-a-api" data-node="a-api" data-file="" data-desc="" tabindex="0">
+<title>Node 서버 (내 담당)</title>
+<rect class="dg-bx" x="262" y="58" width="300" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="274" y="82.7">Node 서버 (내 담당)</text>
+<text class="dg-s" x="274" y="104.80000000000001">API 핸들러 하나를 개발·배포가 공유</text>
+<text class="dg-s" x="274" y="124.30000000000001">세션 격리 · 동시 실행 상한</text>
+<text class="dg-s" x="274" y="143.8">JSONL → SSE 중계 · heartbeat</text>
+</g>
+<g class="dg-node" id="pdf-agent24-a-agent" data-node="a-agent" data-file="" data-desc="" tabindex="0">
+<title>Python 에이전트 루프 (내 담당)</title>
+<rect class="dg-bx" x="592" y="58" width="366" height="106.60000000000001" rx="3"/>
+<text class="dg-t" x="604" y="82.7">Python 에이전트 루프 (내 담당)</text>
+<text class="dg-s" x="604" y="104.80000000000001">목표만 부여, 단계는 강제하지 않음</text>
+<text class="dg-s" x="604" y="124.30000000000001">실행 종류별로 툴 노출을 분리 (권한 = 툴)</text>
+<text class="dg-s" x="604" y="143.8">상태 변경 전 판단 근거 기록 · 스텝 상한</text>
+</g>
+<g class="dg-node" id="pdf-agent24-a-state" data-node="a-state" data-file="" data-desc="" tabindex="0">
+<title>그래프 상태</title>
+<rect class="dg-bx-state" x="592" y="204.60000000000002" width="366" height="67.6" rx="3"/>
+<text class="dg-t" x="604" y="229.3">그래프 상태</text>
+<text class="dg-s" x="604" y="251.40000000000003">세션별 JSON 파일 · 툴은 조회·변경만 (LLM 호출 없음)</text>
+</g>
+<g class="dg-node" id="pdf-agent24-a-front" data-node="a-front" data-file="" data-desc="" tabindex="0">
+<title>프론트 (팀원)</title>
+<rect class="dg-bx-ext" x="32" y="316.20000000000005" width="300" height="87.10000000000001" rx="3"/>
+<text class="dg-t" x="44" y="340.90000000000003">프론트 (팀원)</text>
+<text class="dg-s" x="44" y="363.00000000000006">그래프 · 노트 · 약점 표시</text>
+<text class="dg-s" x="44" y="382.50000000000006">raw / 요약 스트림 토글</text>
+</g>
+<g class="dg-node" id="pdf-agent24-a-contract" data-node="a-contract" data-file="" data-desc="" tabindex="0">
+<title>데이터 계약 3층 + 자동 검사 (내 담당)</title>
+<rect class="dg-bx" x="362" y="316.20000000000005" width="596" height="87.10000000000001" rx="3"/>
+<text class="dg-t" x="374" y="340.90000000000003">데이터 계약 3층 + 자동 검사 (내 담당)</text>
+<text class="dg-s" x="374" y="363.00000000000006">그래프 상태 · 툴 시그니처 · 스트림 이벤트를 pydantic·TypeScript 두 벌로</text>
+<text class="dg-s" x="374" y="382.50000000000006">검사 4종을 dev·agent 실행 전에 강제 → 4인이 키 없이 병렬 개발</text>
+</g>
+</svg>

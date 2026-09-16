@@ -1,0 +1,78 @@
+---
+/** 핵심 결정 하나. 상황 → 검토한 대안 → 선택과 이유 → 결과. MDX 본문에서 쓴다. */
+interface Props {
+  title: string;
+  context: string;
+  alternatives: string[];
+  choice: string;
+  why: string;
+  outcome: string;
+}
+const { title, context, alternatives, choice, why, outcome } = Astro.props;
+---
+
+<section class="decision">
+  <h3>{title}</h3>
+  <dl>
+    <div>
+      <dt class="mono meta">상황</dt>
+      <dd>{context}</dd>
+    </div>
+    <div>
+      <dt class="mono meta">검토한 대안</dt>
+      <dd>
+        <ul>
+          {alternatives.map((a) => <li>{a}</li>)}
+        </ul>
+      </dd>
+    </div>
+    <div>
+      <dt class="mono meta">선택과 이유</dt>
+      <dd>
+        <strong>{choice}</strong> {why}
+      </dd>
+    </div>
+    <div>
+      <dt class="mono meta">결과</dt>
+      <dd>{outcome}</dd>
+    </div>
+  </dl>
+</section>
+
+<style>
+  .decision {
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--line);
+  }
+  .decision h3 {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-3);
+  }
+  dl {
+    margin: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  dl > div {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: var(--space-3);
+  }
+  dt {
+    padding-top: 3px;
+  }
+  dd {
+    margin: 0;
+    font-size: 15px;
+  }
+  dd ul {
+    margin: 0;
+    padding-left: 1.1em;
+  }
+  @media (max-width: 480px) {
+    dl > div {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+</style>

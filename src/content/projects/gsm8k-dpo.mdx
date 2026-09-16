@@ -1,0 +1,89 @@
+---
+title: GSM8K 선호 데이터와 DPO · SimPO
+slug: gsm8k-dpo
+oneLiner: 학습 붕괴의 원인을 선호 데이터까지 역추적해 재설계하고, SimPO를 직접 구현해 DPO와 비교한 LLM 과제
+period:
+  start: 2026-05
+  end: 2026-05
+team:
+  size: 1
+  role: 선호 데이터 · SimPO 구현 · 학습 실험
+  contribution: 제공된 SFT → 선호 데이터 → DPO 파이프라인 위에서 선호 데이터를 재설계하고, SimPO 학습기를 추가하고, 학습 안정화 설정을 조정했다.
+scope: 100문항 평가에서 baseline 대비 DPO 개선을 확인했다. 작은 평가 표본과 최고 run 선택이라는 조건이 있으며 전체 벤치마크 성능으로 확대하지 않는다.
+result:
+  - label: 100문항 greedy 정확도
+    value: '0.51 → 0.60'
+    note: baseline → DPO, +9%p
+  - label: 선호 쌍 상한
+    value: 1000
+    unit: 쌍
+    note: chosen은 7B 수학 모델의 추론, rejected는 1B 베이스의 실제 오답
+  - label: chosen이 더 짧은 쌍
+    value: '8.5 → 3.5'
+    unit: '%'
+stack: [OpenRLHF, vLLM, DeepSpeed, Llama-3.2-1B, Qwen2.5-Math-7B-Instruct]
+roles: [data, mlops]
+impact: 6
+public: true
+links:
+  repo: https://github.com/freeman106/CAS4133-assn2
+  model: https://huggingface.co/hwanuk16/assn2-dpo-best
+---
+
+## 문제
+
+OpenRLHF와 vLLM으로 구성된 SFT → 선호 데이터 생성 → DPO/SimPO → 평가 파이프라인이 주어졌고, 선호 데이터 생성부가 주요 구현 과제였다. 노트북에 남아 있던 조교의 실행 결과에서 이상 신호가 먼저 보였다. 원인을 단정하는 대신 템플릿을 그대로 재현 학습해, 정책이 `#### 1 2 3 4…` 같은 카운팅 패턴으로 붕괴하는 것을 직접 확인한 뒤 데이터를 역추적했다.
+
+## 핵심 결정
+
+<Decision
+  title="1. 붕괴의 원인을 프레임워크 설정이 아니라 선호 데이터에서 찾았다"
+  context="학습 후 출력이 숫자 나열로 붕괴했다. 하이퍼파라미터를 바꾸기 전에 무엇을 학습시키고 있는지부터 봐야 했다."
+  alternatives={[
+    'β · 학습률 등 하이퍼파라미터 스윕',
+    '선호 쌍을 열어 chosen과 rejected가 실제로 무엇인지 조사',
+  ]}
+  choice="데이터부터 조사했다."
+  why="정답 샘플이 없는 문제에 짧은 합성 문자열을 주입하는 fallback이 있었고, 생성 단계에서 정답을 얻지 못한 문제가 많아 전체 쌍의 36%에서 발동하고 있었다. 그 상태에서 chosen 평균 415자, rejected 평균 739자로 정답 쪽이 324자나 짧았다. 정책은 '짧을수록 좋다'를 배우고 있었다."
+  outcome="재설계 뒤 길이 차이는 중앙값 +553자로 뒤집혔고 chosen이 더 짧은 쌍은 8.5%에서 3.5%로 줄었다."
+/>
+
+<Decision
+  title="2. 합성 주입을 버리고 실제 추론으로 선호 쌍을 다시 만들었다"
+  context="chosen에는 좋은 다단계 추론이, rejected에는 실제로 나올 법한 오답이 있어야 선호 신호가 의미를 갖는다."
+  alternatives={[
+    'fallback의 합성 문자열을 더 그럴듯하게 바꾼다',
+    'chosen은 정답률 95.5%의 Qwen2.5-Math-7B-Instruct 추론으로, rejected는 베이스 Llama-3.2-1B의 실제 오답으로 구성하고 길이·개수 규칙을 둔다',
+  ]}
+  choice="실제 추론 기반으로 재설계했다."
+  why="두 모델은 vLLM 분산 상태 누수를 피하려고 별도 서브프로세스에서 순차 로딩했다. 필터는 chosen 길이가 rejected보다 400자 이상 짧지 않을 것, 80~2,400자 길이 창, 문제당 최대 2쌍, 총 1,000쌍 상한이다."
+  outcome="이 데이터셋(pref-v3)과 최고 DPO 모델을 공개했다. 링크는 메타 블록에 있다."
+/>
+
+<Decision
+  title="3. SimPO를 레퍼런스 모델 없이 직접 구현하고 DPO와 비교했다"
+  context="제공 트리에는 DPO만 있었다. 길이 정규화와 마진을 쓰는 SimPO가 레퍼런스 없이도 안정적인지 같은 데이터로 확인하고 싶었다."
+  alternatives={[
+    'DPO만 튜닝',
+    'SimPOLoss · 학습기 · 실행 스크립트를 추가하고 레퍼런스 forward · KL 항 · 두 번째 DeepSpeed 엔진을 모두 제거',
+  ]}
+  choice="SimPO를 추가해 비교했다."
+  why="fp16에서 β가 클 때 생기던 NaN은 bf16 전환으로 없앴고, max_len 기본값 32768이 활성값을 과할당해 4096으로 줄였으며, DeepSpeed rank 로그 리다이렉션이 플랫폼 하트비트 타임아웃을 일으켜 비활성화했다."
+  outcome="선호 신호가 강할수록 레퍼런스 없는 SimPO는 붕괴했고(베이스 이하) DPO가 우세했다. loss 포화와 출력 붕괴를 근거로 레퍼런스 모델의 안정화 역할을 가설로 제시했으며, 인과 메커니즘을 입증한 것은 아니다."
+/>
+
+## 결과
+
+| 단계 | 100문항 정확도 |
+| --- | ---: |
+| baseline | 0.51 |
+| SFT (보고서 기록) | 0.56 |
+| DPO (최고 run) | 0.60 |
+
+제공 템플릿의 기본 SFT 학습률 2e-7에서는 loss가 1.59에서 1.12로 사실상 학습되지 않았고, 1e-6으로 올린 것만으로 +0.05가 나왔다. 주어진 설정을 검증 없이 믿으면 안 된다는 것을 확인한 사례다. 초기 run의 baseline은 0.48이라 출력에 +0.12가 남아 있는데, 최종 재평가 baseline 0.51과 섞지 않는다.
+
+## 한계와 다음 단계
+
+- 100문항 평가이고 여러 run 중 최고를 골랐다. 전체 GSM8K나 일반 추론 능력의 확정적 개선으로 확대하지 않는다.
+- 데이터 재설계, SFT 학습률, SimPO 구현의 기여를 하나의 인과효과로 분리하지 못했다.
+- 공개 저장소의 노트북과 최종 작업 파일의 수치가 달라 최종 파일을 명시해야 한다.

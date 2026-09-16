@@ -1,0 +1,114 @@
+---
+/**
+ * src/assets/diagrams/ 의 SVG 를 인라인으로 넣는다.
+ * interactive 가 켜지면 구성 요소에 호버·포커스·탭했을 때 설명 패널이 바뀐다.
+ * 인터랙션은 사이트 전체에서 이 한 곳(대표 프로젝트 1개)에만 쓴다.
+ */
+interface Props {
+  name: string;
+  interactive?: boolean;
+  caption?: string;
+}
+const { name, interactive = false, caption } = Astro.props;
+
+const svgs = import.meta.glob('../assets/diagrams/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+const svg = svgs[`../assets/diagrams/${name}`];
+if (!svg) throw new Error(`diagram not found: ${name}`);
+---
+
+<figure class="diagram" data-interactive={interactive ? '' : undefined}>
+  <div class="diagram-scroll">
+    <div class="diagram-inner" set:html={svg} />
+  </div>
+  {
+    interactive && (
+      <div class="diagram-panel" aria-live="polite">
+        <p class="hint meta">구성 요소에 마우스를 올리거나 탭하면 설명이 나타납니다.</p>
+        <div class="panel-body" hidden>
+          <p class="panel-title"></p>
+          <p class="panel-desc"></p>
+          <p class="panel-file mono meta"></p>
+        </div>
+      </div>
+    )
+  }
+  {caption && <figcaption class="meta">{caption}</figcaption>}
+</figure>
+
+<style>
+  .diagram {
+    margin: var(--space-8) 0;
+  }
+  .diagram-scroll {
+    overflow-x: auto;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: var(--space-4) 0;
+  }
+  .diagram-inner {
+    min-width: 640px;
+  }
+  .diagram :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .diagram-panel {
+    min-height: 88px;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .hint {
+    margin: 0;
+  }
+  .panel-body p {
+    margin: 0;
+  }
+  .panel-title {
+    color: var(--fg);
+    font-weight: 600;
+  }
+  .panel-desc {
+    font-size: 15px;
+  }
+  .panel-file {
+    margin-top: var(--space-1);
+  }
+  figcaption {
+    margin-top: var(--space-2);
+  }
+</style>
+
+<script>
+  for (const fig of document.querySelectorAll<HTMLElement>('figure[data-interactive]')) {
+    const body = fig.querySelector<HTMLElement>('.panel-body');
+    const hint = fig.querySelector<HTMLElement>('.hint');
+    const title = fig.querySelector<HTMLElement>('.panel-title');
+    const desc = fig.querySelector<HTMLElement>('.panel-desc');
+    const file = fig.querySelector<HTMLElement>('.panel-file');
+    const nodes = Array.from(fig.querySelectorAll<SVGGElement>('.dg-node'));
+    if (!body || !title || !desc || !file) continue;
+
+    const show = (node: SVGGElement) => {
+      for (const n of nodes) n.classList.toggle('is-active', n === node);
+      title.textContent = node.querySelector('.dg-t')?.textContent ?? '';
+      desc.textContent = node.dataset.desc ?? '';
+      file.textContent = node.dataset.file ?? '';
+      body.hidden = false;
+      if (hint) hint.hidden = true;
+    };
+
+    for (const node of nodes) {
+      node.addEventListener('mouseenter', () => show(node));
+      node.addEventListener('focus', () => show(node));
+      node.addEventListener('click', (e) => {
+        e.preventDefault();
+        show(node);
+      });
+    }
+  }
+</script>

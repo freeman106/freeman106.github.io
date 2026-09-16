@@ -1,0 +1,68 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import FeaturedProject from '../components/FeaturedProject.astro';
+import ProjectTable from '../components/ProjectTable.astro';
+import { SITE } from '../lib/site';
+
+const all = (await getCollection('projects', ({ data }) => data.public)).sort(
+  (a, b) => a.data.impact - b.data.impact,
+);
+const featured = all.filter((p) => p.data.featured).slice(0, 3);
+const featuredSlugs = new Set(featured.map((p) => p.data.slug));
+const rest = all.filter((p) => !featuredSlugs.has(p.data.slug));
+---
+
+<Base>
+  <section class="intro reveal" style="--i:1">
+    <h1>{SITE.positioning}</h1>
+    <p class="targets mono meta">{SITE.targets.join(' · ')}</p>
+  </section>
+
+  <section class="section reveal" id="featured" style="--i:2">
+    <div class="section-label">
+      <h2>대표 프로젝트</h2>
+      <span class="mono meta">{featured.length}</span>
+    </div>
+    {featured.map((p, i) => <FeaturedProject project={p} index={3 + i} />)}
+  </section>
+
+  <section class="section reveal" id="projects" style="--i:6">
+    <div class="section-label">
+      <h2>프로젝트</h2>
+      <span class="mono meta">{rest.length}</span>
+    </div>
+    <ProjectTable projects={rest} />
+  </section>
+
+  <section class="section reveal" id="contact" style="--i:8">
+    <div class="section-label">
+      <h2>연락처</h2>
+    </div>
+    <ul class="contact">
+      {SITE.email && <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>}
+      <li>
+        <a href="/print">이력서 PDF</a>
+        <span class="meta"> — print 뷰에서 브라우저 인쇄로 저장. 직무별 필터는 쿼리로 지정.</span>
+      </li>
+      <li><a href="/about">About</a><span class="meta"> — 타임라인 · 스택 · 활동</span></li>
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    padding-top: var(--space-12);
+  }
+  .intro h1 {
+    max-width: 22ch;
+    word-break: keep-all;
+  }
+  .targets {
+    margin-top: var(--space-4);
+  }
+  .contact {
+    list-style: none;
+    padding: 0;
+  }
+</style>

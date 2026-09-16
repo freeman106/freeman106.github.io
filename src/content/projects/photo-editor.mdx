@@ -1,0 +1,52 @@
+---
+title: 사진 편집 UI 프로토타입
+slug: photo-editor
+oneLiner: 네이티브 적용 전 기능 검증을 위한 React · Canvas 모바일 편집기. 멀티터치 제스처를 상태 머신으로 다룸
+period:
+  start: 2025-03
+  end: 2025-06
+team:
+  size: 1
+  role: 프로토타입 구현 (뽈레 인턴)
+  contribution: 3레이어 구조, 제스처 상태 머신, 크롭 UI, 성능 분석을 수행했다.
+scope: 프로토타입이다. 서비스는 네이티브 앱이며 반영 여부는 싣지 않는다. 코드는 비공개.
+stack: [React 18, TypeScript, Canvas 2D API, Vite]
+roles: [frontend]
+impact: 17
+public: true
+---
+
+## 문제
+
+사진 업로드 흐름에 편집 기능이 없어 사용자가 크롭이나 회전을 하려면 외부 앱을 거쳐야 했다. 네이티브 앱에 넣기 전에 기능을 검증하려고 React로 프로토타입을 빠르게 만들었다. 이미지 렌더링 층, 크롭 UI 층, 제스처 처리 엔진의 3레이어로 나누고 크롭 UI를 별도 Canvas로 분리해 이미지 재렌더링 비용과 깜빡임을 없앴다.
+
+## 핵심 결정
+
+<Decision
+  title="1. PointerEvent에서 TouchEvent로 바꿨다"
+  context="처음에는 PointerEvent로 구현했는데 멀티터치로 확장하려니 포인터마다 개별 추적이 필요한 구조적 한계가 있었다."
+  alternatives={[
+    'PointerEvent를 유지하고 포인터 맵을 직접 관리',
+    'TouchEvent의 touches 배열이 모든 터치 포인트를 한 번에 주는 이점을 쓴다',
+  ]}
+  choice="TouchEvent로 전환했다."
+  why="제스처를 idle → pan → pinch/pending → zoom_pan / full의 상태 머신으로 설계했다. 확대 중에는 zoom과 pan을 잠그고 축소 시에는 rotate를 해제하는 분기를 두었고, pending 상태에서도 zoom과 pan을 즉시 반영해 입력 지연감을 없앴다. 모드가 바뀔 때 baseline을 재설정해 값이 튀지 않게 했다."
+  outcome="멀티터치 전환이 상태로 설명되는 구조가 됐다."
+/>
+
+<Decision
+  title="2. 초당 수십~백 회의 터치 이벤트에서 stale closure를 ref로 해결했다"
+  context="터치 이벤트가 초당 60~120회 들어오는 환경에서 useState 기반 상태는 오래된 클로저를 참조했다."
+  alternatives={[
+    'useState 유지',
+    '제스처 상태를 useRef에 두고 렌더와 분리',
+  ]}
+  choice="useRef로 옮겼다."
+  why="핀치 줌은 누적(+=) 방식이 부동소수점 오차로 발산해 비율(*) 방식으로 바꿨다. 크롭 핸들 8개의 if-else 40줄은 방향 문자열(n/s/e/w)과 includes 패턴으로 8줄로 줄였다."
+  outcome="Chrome DevTools로 터치당 setState 3회 호출, rAF 미사용, 보간 부재, CPU 렌더링 네 가지 병목을 식별하고 rAF+ref, lerp 보간, CSS transform 하이브리드, WebGL 전환의 개선안을 설계했다."
+/>
+
+## 한계와 다음 단계
+
+- 프로토타입이며 네이티브 앱 반영 여부, 실측 FPS, 사용자 반응은 싣지 않는다.
+- 개선안 네 가지는 설계까지 했고 전부 구현하지는 않았다.

@@ -1,0 +1,79 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatPeriod } from '../lib/format';
+import { ROLE_LABEL } from '../lib/site';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+}
+const { projects } = Astro.props;
+---
+
+<ol class="plist">
+  {
+    projects.map((p) => (
+      <li class="row">
+        <div class="head">
+          <a class="quiet name" href={`/projects/${p.data.slug}`}>
+            {p.data.title}
+          </a>
+          <span class="mono meta side">
+            <span class="period">
+              {formatPeriod(p.data.period) || '—'}
+              {p.data.period.tentative && <span class="tent"> · 확인 필요</span>}
+            </span>
+            <span class="roles">{p.data.roles.map((r) => ROLE_LABEL[r]).join(' · ')}</span>
+          </span>
+        </div>
+        <p class="one">{p.data.oneLiner}</p>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .plist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .row {
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+  }
+  .row + .row {
+    margin-top: 0;
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .name {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .side {
+    display: flex;
+    gap: var(--space-4);
+    white-space: nowrap;
+  }
+  .one {
+    margin: var(--space-1) 0 0;
+    font-size: 15px;
+    max-width: 64ch;
+  }
+  .tent {
+    color: var(--accent);
+  }
+  @media (max-width: 480px) {
+    .side {
+      white-space: normal;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+  }
+</style>

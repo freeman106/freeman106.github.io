@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404" noindex>
+  <section class="nf reveal" style="--i:1">
+    <p class="mono meta">404</p>
+    <h1>페이지가 없습니다.</h1>
+    <p><a href="/">홈으로</a> 돌아가거나 <a href="/#projects">프로젝트 목록</a>에서 찾아보세요.</p>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    padding-top: var(--space-16);
+  }
+  .nf h1 {
+    margin: var(--space-2) 0 var(--space-4);
+  }
+</style>

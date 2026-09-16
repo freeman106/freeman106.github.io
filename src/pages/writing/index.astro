@@ -1,0 +1,85 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../lib/site';
+
+const entries = (await getCollection('writing', ({ data }) => data.public)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+const rendered = await Promise.all(
+  entries.map(async (e) => ({ e, Content: (await render(e)).Content, hasBody: !!e.body?.trim() })),
+);
+const projects = await getCollection('projects', ({ data }) => data.public);
+const titleOf = (slug?: string) => projects.find((p) => p.data.slug === slug)?.data.title;
+const fmt = (d: Date) => `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+const TYPE_LABEL = { report: '리포트', retro: '회고' } as const;
+---
+
+<Base title="Writing" description={`${SITE.name}의 리포트 원본과 회고 글.`}>
+  <section class="reveal" style="--i:1">
+    <h1>Writing</h1>
+    <p class="meta">강의 리포트 원본과 회고. <a href="/rss.xml">RSS</a></p>
+  </section>
+
+  <section class="section reveal" style="--i:2">
+    {entries.length === 0 && <p class="meta">아직 없습니다.</p>}
+    <ol class="wlist">
+      {
+        rendered.map(({ e, Content, hasBody }) => (
+          <li>
+            <div class="head">
+              <span class="mono meta">{fmt(e.data.date)} · {TYPE_LABEL[e.data.type]}</span>
+              {e.data.project && titleOf(e.data.project) && (
+                <a class="mono meta quiet" href={`/projects/${e.data.project}`}>{titleOf(e.data.project)}</a>
+              )}
+            </div>
+            <h3>{e.data.file ? <a class="quiet" href={e.data.file}>{e.data.title}</a> : e.data.title}</h3>
+            {e.data.summary && <p class="summary">{e.data.summary}</p>}
+            {hasBody && (
+              <div class="body">
+                <Content />
+              </div>
+            )}
+            {e.data.file && (
+              <p class="mono meta">
+                <a href={e.data.file}>PDF 열기</a>
+              </p>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    margin-top: var(--space-8);
+  }
+  .wlist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .wlist li {
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .wlist h3 {
+    margin: var(--space-1) 0 var(--space-2);
+  }
+  .summary {
+    font-size: 15px;
+    max-width: 64ch;
+  }
+  .body {
+    font-size: 15px;
+  }
+</style>

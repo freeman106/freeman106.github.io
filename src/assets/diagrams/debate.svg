@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 477" width="960" height="477" role="img" aria-labelledby="debate-title" data-diagram="debate">
+<title id="debate-title">다중 에이전트 토론 실험 파이프라인</title>
+<style>
+  .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
+  .dg-grp-l { font: 500 11px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
+  .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
+  .dg-node:focus { outline: none; }
+  .dg-t { font: 500 13px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: 11px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: 10.5px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#debate-ah); }
+  .dg-ar-d { stroke-dasharray: 4 3; }
+  .dg-al { font: 10.5px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-node { cursor: default; }
+</style>
+<defs><marker id="debate-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>
+<g class="dg-group" data-group="run">
+<rect class="dg-grp" x="24" y="24" width="912" height="262" rx="4"/>
+<text class="dg-grp-l" x="36" y="40">실험 실행</text>
+</g>
+<g class="dg-group" data-group="analyze-group">
+<rect class="dg-grp" x="24" y="310" width="912" height="143" rx="4"/>
+<text class="dg-grp-l" x="36" y="326">채점 · 집계 · 산출물</text>
+</g>
+<path class="dg-ar" d="M170,109 H186"/>
+<path class="dg-ar" d="M336,109 H352"/>
+<path class="dg-ar" d="M542,109 H558"/>
+<path class="dg-ar" d="M784,86.19999999999999 H800"/>
+<text class="dg-al" x="792" y="44" text-anchor="middle">batch JSON</text>
+<path class="dg-ar" d="M800,137.5 H784"/>
+<text class="dg-al" x="792" y="181" text-anchor="middle">생성 텍스트</text>
+<path class="dg-ar" d="M868,188 V166"/>
+<path class="dg-ar dg-ar-d" d="M671,188 V166"/>
+<path class="dg-ar" d="M558,154.60000000000002 H550 V298 H125 V338"/>
+<text class="dg-al" x="300" y="292" text-anchor="start">라운드별 생성 텍스트</text>
+<path class="dg-ar" d="M210,387.5 H226"/>
+<path class="dg-ar" d="M386,387.5 H402"/>
+<path class="dg-ar" d="M594,387.5 H610"/>
+<path class="dg-ar" d="M750,387.5 H766"/>
+<g class="dg-node" id="debate-hf-datasets" data-node="hf-datasets" data-file="" data-desc="외부 벤치마크 데이터셋." tabindex="0">
+<title>HF datasets — 외부 벤치마크 데이터셋.</title>
+<rect class="dg-bx-ext" x="40" y="52" width="130" height="114" rx="3"/>
+<text class="dg-t" x="52" y="71">HF datasets</text>
+<text class="dg-s" x="52" y="88">GSM8K test</text>
+<text class="dg-s" x="52" y="103">HotpotQA distractor</text>
+</g>
+<g class="dg-node" id="debate-data" data-node="data" data-file="load_questions" data-desc="두 데이터셋을 {qid, dataset, question, gold} 한 목록으로 정규화한다." tabindex="0">
+<title>data.py — 두 데이터셋을 {qid, dataset, question, gold} 한 목록으로 정규화한다.</title>
+<rect class="dg-bx" x="186" y="52" width="150" height="114" rx="3"/>
+<text class="dg-t" x="198" y="71">data.py</text>
+<text class="dg-s" x="198" y="88">200 + 200 문항</text>
+<text class="dg-s" x="198" y="103">HotpotQA closed-book</text>
+<text class="dg-f" x="198" y="157">load_questions</text>
+</g>
+<g class="dg-node" id="debate-prompts" data-node="prompts" data-file="" data-desc="R0 프롬프트는 조건과 무관하고, R1·R2에서만 한 줄 추가(anti_syco)나 동료 추론 은닉(length_robust)이 들어간다." tabindex="0">
+<title>prompts.py — R0 프롬프트는 조건과 무관하고, R1·R2에서만 한 줄 추가(anti_syco)나 동료 추론 은닉(length_robust)이 들어간다.</title>
+<rect class="dg-bx" x="352" y="52" width="190" height="114" rx="3"/>
+<text class="dg-t" x="364" y="71">prompts.py</text>
+<text class="dg-s" x="364" y="88">R0 독립 답변 · 토론 메시지</text>
+<text class="dg-s" x="364" y="103">조건별 peer block:</text>
+<text class="dg-s" x="364" y="118">baseline · anti_syco</text>
+<text class="dg-s" x="364" y="133">length_robust (추론 은닉)</text>
+</g>
+<g class="dg-node" id="debate-orchestrate" data-node="orchestrate" data-file="orchestrate.py" data-desc="R0가 조건 독립적이고 temp=0이라 한 번만 생성해 공유한다. 라운드 안의 job은 독립이라 GPU를 채워 돌린다." tabindex="0">
+<title>orchestrate.py — R0가 조건 독립적이고 temp=0이라 한 번만 생성해 공유한다. 라운드 안의 job은 독립이라 GPU를 채워 돌린다.</title>
+<rect class="dg-bx" x="558" y="52" width="226" height="114" rx="3"/>
+<text class="dg-t" x="570" y="71">orchestrate.py</text>
+<text class="dg-s" x="570" y="88">R0 1회 생성 → 3조건에 공유</text>
+<text class="dg-s" x="570" y="103">R1·R2: 조건×모델 job 풀링</text>
+<text class="dg-s" x="570" y="118">GPU wave 실행 · 실패 시 재시도</text>
+<text class="dg-s" x="570" y="133">라운드마다 records.jsonl checkpoint</text>
+<text class="dg-f" x="570" y="157">orchestrate.py</text>
+</g>
+<g class="dg-node" id="debate-worker" data-node="worker" data-file="results/batches/" data-desc="모델마다 프로세스를 새로 띄워 GPU 메모리를 깨끗이 반환한다." tabindex="0">
+<title>worker_vllm.py — 모델마다 프로세스를 새로 띄워 GPU 메모리를 깨끗이 반환한다.</title>
+<rect class="dg-bx" x="800" y="52" width="136" height="114" rx="3"/>
+<text class="dg-t" x="812" y="71">worker_vllm.py</text>
+<text class="dg-s" x="812" y="88">서브프로세스 1개</text>
+<text class="dg-s" x="812" y="103">= 모델 1개 로드</text>
+<text class="dg-s" x="812" y="118">vLLM chat 배치 생성</text>
+<text class="dg-s" x="812" y="133">in/out JSON</text>
+<text class="dg-f" x="812" y="157">results/batches/</text>
+</g>
+<g class="dg-node" id="debate-config" data-node="config" data-file="" data-desc="모델·라운드·조건·디코딩·경로를 한 곳에 둔다." tabindex="0">
+<title>config.py — 모델·라운드·조건·디코딩·경로를 한 곳에 둔다.</title>
+<rect class="dg-bx" x="558" y="188" width="226" height="82" rx="3"/>
+<text class="dg-t" x="570" y="207">config.py</text>
+<text class="dg-s" x="570" y="224">3 모델 · 2 라운드 · 3 조건 · temp 0</text>
+</g>
+<g class="dg-node" id="debate-hf-models" data-node="hf-models" data-file="" data-desc="서로 다른 벤더의 유사 규모 instruct 모델." tabindex="0">
+<title>HF 모델 3종 — 서로 다른 벤더의 유사 규모 instruct 모델.</title>
+<rect class="dg-bx-ext" x="800" y="188" width="136" height="82" rx="3"/>
+<text class="dg-t" x="812" y="207">HF 모델 3종</text>
+<text class="dg-s" x="812" y="224">Qwen2.5-7B</text>
+<text class="dg-s" x="812" y="239">Llama-3.1-8B</text>
+<text class="dg-s" x="812" y="254">Mistral-7B-v0.3</text>
+</g>
+<g class="dg-node" id="debate-extract" data-node="extract" data-file="" data-desc="자유 텍스트에서 답을 뽑고 데이터셋별 규칙으로 채점한다. 표식이 없어도 예외를 내지 않는다." tabindex="0">
+<title>extract.py — 자유 텍스트에서 답을 뽑고 데이터셋별 규칙으로 채점한다. 표식이 없어도 예외를 내지 않는다.</title>
+<rect class="dg-bx" x="40" y="338" width="170" height="99" rx="3"/>
+<text class="dg-t" x="52" y="357">extract.py</text>
+<text class="dg-s" x="52" y="374">&quot;Final answer:&quot; 표식 추출</text>
+<text class="dg-s" x="52" y="389">GSM8K 수치 비교</text>
+<text class="dg-s" x="52" y="404">HotpotQA 정규화 EM · F1</text>
+</g>
+<g class="dg-node" id="debate-records" data-node="records" data-file="results/records.jsonl" data-desc="집계의 원본. 이 파일을 재집계해 저장된 지표와 일치함을 확인했다." tabindex="0">
+<title>records.jsonl — 집계의 원본. 이 파일을 재집계해 저장된 지표와 일치함을 확인했다.</title>
+<rect class="dg-bx-state" x="226" y="338" width="160" height="99" rx="3"/>
+<text class="dg-t" x="238" y="357">records.jsonl</text>
+<text class="dg-s" x="238" y="374">10,800 조건별 평가 기록</text>
+<text class="dg-s" x="238" y="389">condition · qid · model</text>
+<text class="dg-s" x="238" y="404">round · answer · correct</text>
+<text class="dg-f" x="238" y="428">results/records.jsonl</text>
+</g>
+<g class="dg-node" id="debate-analyze" data-node="analyze" data-file="→ results/metrics.json" data-desc="정확도뿐 아니라 정답→오답 전환, 채택한 동료가 더 길었는지, 어느 모델이 합의를 지배하는지를 센다." tabindex="0">
+<title>analyze.py — 정확도뿐 아니라 정답→오답 전환, 채택한 동료가 더 길었는지, 어느 모델이 합의를 지배하는지를 센다.</title>
+<rect class="dg-bx" x="402" y="338" width="192" height="99" rx="3"/>
+<text class="dg-t" x="414" y="357">analyze.py</text>
+<text class="dg-s" x="414" y="374">majority · round_curve</text>
+<text class="dg-s" x="414" y="389">flip_to_wrong / flip_to_correct</text>
+<text class="dg-s" x="414" y="404">verbosity · source asymmetry</text>
+<text class="dg-f" x="414" y="428">→ results/metrics.json</text>
+</g>
+<g class="dg-node" id="debate-plots" data-node="plots" data-file="results/figs/" data-desc="metrics.json에서 슬라이드용 그림을 만든다." tabindex="0">
+<title>plots.py — metrics.json에서 슬라이드용 그림을 만든다.</title>
+<rect class="dg-bx" x="610" y="338" width="140" height="99" rx="3"/>
+<text class="dg-t" x="622" y="357">plots.py</text>
+<text class="dg-s" x="622" y="374">figs/*.png 8장</text>
+<text class="dg-s" x="622" y="389">데이터셋별 분리 그림</text>
+<text class="dg-f" x="622" y="428">results/figs/</text>
+</g>
+<g class="dg-node" id="debate-slides" data-node="slides" data-file="" data-desc="결과 발표물과 토론 과정을 재생하는 데모." tabindex="0">
+<title>build_slides · demo — 결과 발표물과 토론 과정을 재생하는 데모.</title>
+<rect class="dg-bx" x="766" y="338" width="170" height="99" rx="3"/>
+<text class="dg-t" x="778" y="357">build_slides · demo</text>
+<text class="dg-s" x="778" y="374">슬라이드 PDF</text>
+<text class="dg-s" x="778" y="389">터미널 리플레이 (GPU 없이)</text>
+</g>
+</svg>

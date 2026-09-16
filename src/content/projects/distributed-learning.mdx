@@ -1,0 +1,84 @@
+---
+title: 분산학습 시뮬레이션 — GPipe, 통신 압축, 비동기 연합학습
+slug: distributed-learning
+oneLiner: 단일 GPU에서 데이터 병렬·GPipe 스케줄과 Top-k · Error Feedback · 비동기 업데이트를 구현해 정확도와 통신량의 절충을 비교
+period:
+  start: 2025-12
+team:
+  size: 1
+  role: 구현 · 실험 · 보고서
+  contribution: 과제 템플릿 위에서 병렬 스케줄, 압축·오차 보존, 비동기 가중치 구현을 채우고 보고서를 작성했다.
+scope: 과제 1·2 구현과 보고서를 완료했다. 단일 GPU 시뮬레이션이며 다중 GPU 실측이 아니다.
+result:
+  - label: Non-IID · k=0.01 · 10 round 정확도
+    value: '26.83 → 28.08'
+    unit: '%'
+    note: Top-k → Top-k + Error Feedback
+  - label: 누적 전송 scalar 수
+    value: '234,081,000 → 2,340,800'
+    note: Full → k=0.01. index·프로토콜 비용 제외
+stack: [PyTorch, CIFAR-10]
+roles: [mlops]
+impact: 11
+public: true
+links:
+  report: /files/distributed-learning-assignment2.pdf
+---
+
+## 문제
+
+통신량을 줄이면 학습은 어떻게 달라지는가. 데이터 분포가 고르지 않고 업데이트가 늦게 도착할 때는 어떻게 다루는가. 두 과제로 나눠 단일 GPU에서 병렬 학습의 원리를 시뮬레이션했다.
+
+## 핵심 결정
+
+<Decision
+  title="1. 메모리를 차지하는 것은 파라미터보다 activation이라는 데서 출발했다"
+  context="CNN을 full-batch로 학습하면 메모리가 부족했다. 원인을 파라미터 크기로 보면 해법이 달라진다."
+  alternatives={[
+    '모델을 줄인다',
+    'activation이 batch 크기에 따라 커지는 관계를 분석하고, 4 worker의 gradient 평균과 4 partition · 4 micro-batch의 GPipe 스케줄을 구현해 비교',
+  ]}
+  choice="데이터 분할과 micro-batch 스케줄을 구현해 비교했다."
+  why="SGD · Momentum · Adam의 학습 곡선까지 함께 기록해 실행 순서가 peak memory와 학습에 미치는 영향을 봤다."
+  outcome="출력의 utilization은 시뮬레이션 지표이며 실제 다중 GPU 확장성이 아니다."
+/>
+
+<Decision
+  title="2. Top-k로 버린 업데이트를 residual로 보존했다"
+  context="gradient 크기 기준 Top-k sparsification은 통신량을 크게 줄이지만 버린 업데이트만큼 정보가 사라진다."
+  alternatives={[
+    'Top-k만 적용',
+    '누락된 업데이트를 residual로 누적해 다음 라운드에 더하는 Error Feedback',
+  ]}
+  choice="Error Feedback을 구현해 비교했다."
+  why="같은 k에서 두 방법의 전송 scalar 수는 같으므로 정확도 차이만 비교하면 된다. IID와 Non-IID 분할, k=0.1과 0.01을 교차했다."
+  outcome="Non-IID · k=0.01에서 26.83%가 28.08%로 올랐다. IID · k=0.01에서는 30.63%와 30.69%로 차이가 작아 효과가 모든 조건에서 같지는 않았다."
+/>
+
+<Decision
+  title="3. 비동기 업데이트의 staleness를 가중치로 반영했다"
+  context="클라이언트 업데이트가 서로 다른 모델 버전에서 출발하면 오래된 업데이트가 학습을 흔든다."
+  alternatives={[
+    '도착 순서대로 그대로 적용',
+    '모델 버전 차이로 staleness를 계산해 alpha / (staleness + 1)로 가중치를 줄인다',
+  ]}
+  choice="staleness 가중치를 넣었다."
+  why="40 simulation units에서 IID Sync 51.13% / Async 47.60%, Non-IID Sync 45.25% / Async 36.13%였다."
+  outcome="가로축이 simulation time이라 실제 시간이나 동일 연산량 비교로 해석하지 않는다."
+/>
+
+## 결과
+
+| 데이터 | k | Top-k | Top-k + EF | 누적 scalar |
+| --- | ---: | ---: | ---: | ---: |
+| IID | 0.1 | 36.00% | 36.54% | 23,408,100 |
+| Non-IID | 0.1 | 32.41% | 33.81% | 23,408,100 |
+| IID | 0.01 | 30.63% | 30.69% | 2,340,800 |
+| Non-IID | 0.01 | 26.83% | 28.08% | 2,340,800 |
+
+Full transmission의 종료 정확도는 IID 38.08%, Non-IID 34.86%이고 누적 scalar 수는 234,081,000이다. 핵심은 정확도와 통신량의 절충이지, 정확도 손실 없는 통신 절감이 아니다.
+
+## 한계와 다음 단계
+
+- 통신량은 코드가 센 scalar 개수다. sparse index와 프로토콜 비용은 포함하지 않으며 byte나 wall-clock이 아니다.
+- 단일 GPU 시뮬레이션이다. 여러 GPU 사이의 통신 처리량은 측정하지 않았다.

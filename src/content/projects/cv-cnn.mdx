@@ -1,0 +1,38 @@
+---
+title: 영상 처리 기초와 CNN 비교
+slug: cv-cnn
+oneLiner: Seam carving, Harris corner, homography mosaic을 MATLAB으로 구현하고 Fashion-MNIST에서 LeNet과 변형 모델을 비교한 과제 묶음
+period:
+  start: 2024-12
+team:
+  size: 1
+  role: 구현
+  contribution: 에너지 · 누적 최소 경로, 구조 텐서 · R score · NMS, SVD homography · warp, CNN 변형을 작성했다. 제공 helper 구간은 제외.
+scope: 과제 여섯 개를 완료했다. 활성화와 pooling을 동시에 바꿨으므로 한 요소의 효과로 쓰지 않는다.
+result:
+  - label: validation accuracy (Fashion-MNIST)
+    value: '73.46 → 88.47'
+    unit: '%'
+    note: LeNet → ReLU · MaxPool 변형
+stack: [MATLAB, PyTorch]
+roles: [data]
+impact: 21
+public: true
+---
+
+## 내용
+
+| 과제 | 직접 구현한 부분 | 설명할 지점 |
+| --- | --- | --- |
+| Seam carving | gradient energy · 누적 최소 에너지 · seam 제거 | 이미지 내용에 따른 크기 조절 |
+| Harris corner | 구조 텐서 · R score · non-maximum suppression | 특징점이 만들어지는 과정 (thresholding은 제공 구간) |
+| 검출 · 양자화 | edge · 원 중심 accumulator · RGB 양자화 | image processing 구성 요소 |
+| Mosaic | 대응점으로 행렬 구성 · SVD homography · warp · canvas 합성 | 영상 기하와 좌표 변환 |
+| CNN | LeNet과 ReLU · MaxPool로 바꾼 변형 모델 | 구성 변경과 학습 결과 비교 |
+
+CNN 비교는 Fashion-MNIST, batch 128, 10 epoch, seed 0 설정이며 validation accuracy는 73.46%에서 88.47%로 달라졌다. 활성화와 pooling을 함께 바꿨으므로 어느 하나의 독립 효과라고 쓰지 않는다.
+
+## 한계
+
+- 자동 특징 매칭이나 RANSAC은 구현하지 않았다. mosaic은 주어진 대응점으로 계산했다.
+- 일부 파일에는 제공 코드 구간과 외부 저자 표기가 있어, 과제 전체를 처음부터 작성한 라이브러리로 소개하지 않는다.

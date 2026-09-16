@@ -1,0 +1,56 @@
+---
+title: RL로 인간의 내부시계와 반응 시간 분포 모델링
+slug: rl-timing
+oneLiner: 시간 간격 과제에서 인간의 반응 지연·조기 반응을 RL 에이전트로 재현한 졸업 프로젝트. 데이터 수집 환경과 학습 환경을 담당
+period:
+  start: 2025-11
+team:
+  size: 4
+  role: 데이터 수집 환경 · 학습 환경 구현
+  contribution: pygame 기반 인간 반응 수집 환경과 Gymnasium 학습 환경(관측 공간 · 보상 · 운동 지연 분포)을 구현했다. 정책 학습과 분석은 팀 공동 작업이며 개인 기여율로 환산하지 않는다.
+scope: 포스터, 환경 코드, 보고서까지 완료했다.
+result:
+  - label: 반응 시간 분포 거리 (EMD)
+    value: '13.9 / 29.3 / 59.2'
+    unit: ms
+    note: Blinking · Flappy Bird 두 과제. 거리 지표이며 유의성 검정이 아님
+stack: [Python, Gymnasium, PPO, LSTM, pygame]
+roles: [data, mlops]
+impact: 10
+public: true
+---
+
+## 문제
+
+기존 Computational Rationality 연구는 공간 정보 중심의 과제를 다루고, 사람이 시간 간격을 인지·기억·예측하는 행동 원리는 모델링하지 못했다. 반응 지연, 조기 반응, 내부시계 오차 같은 불완전한 인지 제약을 RL 에이전트로 재현하는 것이 연구 목표였다. 인간-컴퓨터 상호작용 연구실의 졸업 프로젝트로 4명이 함께 했다.
+
+## 핵심 결정
+
+<Decision
+  title="1. 사람과 에이전트가 같은 과제를 수행하는 환경을 먼저 만들었다"
+  context="인간 반응과 에이전트 반응을 비교하려면 같은 규칙의 과제가 두 쪽에 있어야 한다. 데이터 수집 환경과 학습 환경이 어긋나면 비교 자체가 성립하지 않는다."
+  alternatives={[
+    '기존 게임 환경을 그대로 쓰고 사람은 다른 도구로 측정',
+    'Blinking Task와 Flappy Bird Task를 pygame 수집 환경과 Gymnasium 학습 환경으로 직접 구현',
+  ]}
+  choice="두 환경을 직접 구현했다."
+  why="관측 공간은 flash_on, 마지막 flash 이후 경과 시간, vigilance로 두고, 보상 함수와 운동 지연 확률 분포를 커스텀했다. 인간 데이터는 9개 난이도 조건에서 반복 수집하고 Index of Difficulty 기준으로 실패율과 반응 분포를 분석했다."
+  outcome="팀의 학습·분석이 이 환경 위에서 이루어졌다."
+/>
+
+<Decision
+  title="2. 시간 의존성을 위해 LSTM 정책과 PPO를 택했다"
+  context="시간 간격을 기억하고 예측하는 행동은 현재 관측만으로 결정되지 않는다."
+  alternatives={[
+    'MLP 정책',
+    'LSTM 기반 정책 네트워크 + PPO',
+  ]}
+  choice="LSTM 정책과 PPO로 학습했다."
+  why="Anticipation, Vigilance, Motor Delay를 확률적 노이즈로 명시적으로 모델링했고 PPO로 학습 안정성을 확보했다. 이 부분은 팀 공동 작업이다."
+  outcome="인간과 에이전트의 반응 시간 분포 거리를 EMD로 측정했다. Blinking 13.9ms, Flappy Bird 29.3ms와 59.2ms."
+/>
+
+## 한계와 다음 단계
+
+- EMD는 분포 사이의 거리 지표다. 값 자체가 통계적 유의성을 뜻하지 않는다.
+- 팀 프로젝트라 학습·분석의 개인 기여를 수치로 나누지 않는다.

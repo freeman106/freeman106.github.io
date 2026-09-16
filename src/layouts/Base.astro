@@ -1,0 +1,145 @@
+---
+import '../styles/tokens.css';
+import '../styles/global.css';
+import '@fontsource-variable/jetbrains-mono';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { SITE } from '../lib/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 절대 URL 또는 사이트 상대 경로 */
+  ogImage?: string;
+  noindex?: boolean;
+  /** print 뷰처럼 헤더·푸터를 감출 때 */
+  bare?: boolean;
+}
+
+const { title, description = SITE.description, ogImage, noindex = false, bare = false } = Astro.props;
+const fullTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} ${SITE.nameEn}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = ogImage ? new URL(ogImage, Astro.site).toString() : new URL('/og/default.png', Astro.site).toString();
+const plausible = import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN;
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={og} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    {/* 폰트 CSS 는 비차단으로 로드한다. 로드 전에는 폴백 스택으로 그린다. */}
+    <link rel="preload" as="style" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css" /></noscript>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — Writing`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {/* 저장된 테마를 첫 페인트 전에 적용한다. */}
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        } catch (e) {}
+      })();
+    </script>
+    {plausible && <script defer data-domain={plausible} src="https://plausible.io/js/script.js"></script>}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">본문으로</a>
+    {
+      !bare && (
+        <header class="site-header wrap reveal" style="--i:0">
+          <a class="brand quiet" href="/">
+            {SITE.name} <span class="brand-en mono">{SITE.nameEn}</span>
+          </a>
+          <nav aria-label="사이트">
+            <a class="quiet" href="/#projects">Projects</a>
+            <a class="quiet" href="/writing">Writing</a>
+            <a class="quiet" href="/about">About</a>
+            <ThemeToggle />
+          </nav>
+        </header>
+      )
+    }
+    <main id="main" class={bare ? undefined : 'wrap'}>
+      <slot />
+    </main>
+    {
+      !bare && (
+        <footer class="site-footer wrap meta">
+          <span>© {year} {SITE.name}</span>
+          <span class="links">
+            <a class="quiet" href={SITE.github} rel="me noopener">GitHub · {SITE.githubHandle}</a>
+            <a class="quiet" href="/rss.xml">RSS</a>
+          </span>
+        </footer>
+      )
+    }
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-6);
+    font-size: 15px;
+  }
+  .brand {
+    color: var(--fg);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .brand-en {
+    color: var(--fg-meta);
+    font-weight: 400;
+    margin-left: var(--space-1);
+  }
+  nav {
+    display: flex;
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+  nav a {
+    color: var(--fg-body);
+    font-size: 15px;
+  }
+  .site-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    border-top: 1px solid var(--line);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-12);
+    margin-top: var(--space-24);
+  }
+  .site-footer .links {
+    display: flex;
+    gap: var(--space-4);
+  }
+  @media (max-width: 480px) {
+    .brand-en {
+      display: none;
+    }
+  }
+</style>

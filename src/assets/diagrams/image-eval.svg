@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 976 610" width="976" height="610" role="img" aria-labelledby="image-eval-title" data-diagram="image-eval">
+<title id="image-eval-title">식당 이미지 자동 평가 아키텍처</title>
+<style>
+  .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
+  .dg-grp-l { font: 500 11px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
+  .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
+  .dg-node:focus { outline: none; }
+  .dg-t { font: 500 13px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: 11px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: 10.5px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#image-eval-ah); }
+  .dg-ar-d { stroke-dasharray: 4 3; }
+  .dg-al { font: 10.5px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-node { cursor: default; }
+</style>
+<defs><marker id="image-eval-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>
+<g class="dg-group" data-group="ria">
+<rect class="dg-grp" x="24" y="24" width="300" height="198" rx="4"/>
+<text class="dg-grp-l" x="36" y="40">1차 실험 · Keras (polle_RIA)</text>
+</g>
+<g class="dg-group" data-group="data">
+<rect class="dg-grp" x="24" y="258" width="300" height="328" rx="4"/>
+<text class="dg-grp-l" x="36" y="274">데이터</text>
+</g>
+<g class="dg-group" data-group="train">
+<rect class="dg-grp" x="360" y="258" width="300" height="328" rx="4"/>
+<text class="dg-grp-l" x="372" y="274">학습 · PyTorch / timm (photo_evaluator)</text>
+</g>
+<g class="dg-group" data-group="serve">
+<rect class="dg-grp" x="696" y="258" width="256" height="328" rx="4"/>
+<text class="dg-grp-l" x="708" y="274">추론 · 서비스 연동</text>
+</g>
+<path class="dg-ar dg-ar-d" d="M308,179 H342 V324.7 H376"/>
+<text class="dg-al" x="350" y="250" text-anchor="start">백본·스택 전환 (Keras → PyTorch/timm)</text>
+<path class="dg-ar" d="M174,355 V371"/>
+<path class="dg-ar" d="M174,440 V456"/>
+<path class="dg-ar" d="M308,490.5 H342 V376.3 H376"/>
+<path class="dg-ar" d="M510,415 V431"/>
+<path class="dg-ar" d="M510,500 V516"/>
+<path class="dg-ar" d="M644,543 H678 V328 H712"/>
+<text class="dg-al" x="652" y="535" text-anchor="start">로드</text>
+<path class="dg-ar" d="M824,442 V370"/>
+<text class="dg-al" x="832" y="410" text-anchor="start">호출</text>
+<g class="dg-node" id="image-eval-ria-model" data-node="ria-model" data-file="polle_RIA/scripts/build.py · train_*.py" data-desc="Keras로 사전학습 백본에 회귀·분포 헤드를 붙여 비교한 초기 단계. NIMA는 EMD, 나머지는 MSE로 학습했다." tabindex="0">
+<title>RIAModel 백본 비교 — Keras로 사전학습 백본에 회귀·분포 헤드를 붙여 비교한 초기 단계. NIMA는 EMD, 나머지는 MSE로 학습했다.</title>
+<rect class="dg-bx" x="40" y="52" width="268" height="84" rx="3"/>
+<text class="dg-t" x="52" y="71">RIAModel 백본 비교</text>
+<text class="dg-s" x="52" y="88">ResNet50V2 · InceptionV3 · InceptionResNetV2</text>
+<text class="dg-s" x="52" y="103">EfficientNetV2B0 · NIMA(MobileNet)</text>
+<text class="dg-f" x="52" y="127">polle_RIA/scripts/build.py · train_*.py</text>
+</g>
+<g class="dg-node" id="image-eval-ria-results" data-node="ria-results" data-file="polle_RIA/scripts/losses.py · results/" data-desc="분포 예측용 EMD 손실과 백본별 MSE·class별 오차 결과표. 이 결과가 백본 전환의 근거가 됐다." tabindex="0">
+<title>EMD · MSE 손실 / 결과 CSV — 분포 예측용 EMD 손실과 백본별 MSE·class별 오차 결과표. 이 결과가 백본 전환의 근거가 됐다.</title>
+<rect class="dg-bx" x="40" y="152" width="268" height="54" rx="3"/>
+<text class="dg-t" x="52" y="171">EMD · MSE 손실 / 결과 CSV</text>
+<text class="dg-f" x="52" y="197">polle_RIA/scripts/losses.py · results/</text>
+</g>
+<g class="dg-node" id="image-eval-label-csv" data-node="label-csv" data-file="label.csv" data-desc="운영팀이 검수한 점수 라벨. 학습 스냅샷 한 시점의 6,213행이 들어 있다." tabindex="0">
+<title>검수 라벨 CSV — 운영팀이 검수한 점수 라벨. 학습 스냅샷 한 시점의 6,213행이 들어 있다.</title>
+<rect class="dg-bx" x="40" y="286" width="268" height="69" rx="3"/>
+<text class="dg-t" x="52" y="305">검수 라벨 CSV</text>
+<text class="dg-s" x="52" y="322">image_id · score(1~5) · S3 URI</text>
+<text class="dg-f" x="52" y="346">label.csv</text>
+</g>
+<g class="dg-node" id="image-eval-s3-download" data-node="s3-download" data-file="s3_file_downloader.py" data-desc="CSV의 S3 URI를 순회하며 학습 이미지를 로컬 폴더로 받는다." tabindex="0">
+<title>S3 이미지 다운로드 — CSV의 S3 URI를 순회하며 학습 이미지를 로컬 폴더로 받는다.</title>
+<rect class="dg-bx" x="40" y="371" width="268" height="69" rx="3"/>
+<text class="dg-t" x="52" y="390">S3 이미지 다운로드</text>
+<text class="dg-s" x="52" y="407">boto3 · images/{image_id}.jpg</text>
+<text class="dg-f" x="52" y="431">s3_file_downloader.py</text>
+</g>
+<g class="dg-node" id="image-eval-dataset" data-node="dataset" data-file="photo_score_dataset.py" data-desc="DataFrame 행을 이미지 텐서와 float 점수로 바꾸는 Dataset. 384×384 입력을 쓴다." tabindex="0">
+<title>PhotoScoreDataset — DataFrame 행을 이미지 텐서와 float 점수로 바꾸는 Dataset. 384×384 입력을 쓴다.</title>
+<rect class="dg-bx" x="40" y="456" width="268" height="69" rx="3"/>
+<text class="dg-t" x="52" y="475">PhotoScoreDataset</text>
+<text class="dg-s" x="52" y="492">Resize 384 · ImageNet Normalize</text>
+<text class="dg-f" x="52" y="516">photo_score_dataset.py</text>
+</g>
+<g class="dg-node" id="image-eval-trainer" data-node="trainer" data-file="photo_model_trainer.py" data-desc="timm ConvNeXt V2를 전체 파인튜닝하는 학습기. 고득점 라벨 부족에 대응해 손실 가중치를 쓰고, 점수 구간별 진단 표를 출력한다." tabindex="0">
+<title>PhotoModelTrainer — timm ConvNeXt V2를 전체 파인튜닝하는 학습기. 고득점 라벨 부족에 대응해 손실 가중치를 쓰고, 점수 구간별 진단 표를 출력한다.</title>
+<rect class="dg-bx" x="376" y="286" width="268" height="129" rx="3"/>
+<text class="dg-t" x="388" y="305">PhotoModelTrainer</text>
+<text class="dg-s" x="388" y="322">ConvNeXt V2-Base 384 + 1-출력 회귀 헤드</text>
+<text class="dg-s" x="388" y="337">stratified 80:20 split · 오버샘플링 표(비활성)</text>
+<text class="dg-s" x="388" y="352">weighted MSE · 4점 ×2.0 · 5점 ×3.0</text>
+<text class="dg-s" x="388" y="367">AdamW 전체 파라미터 · lr 1e-4</text>
+<text class="dg-s" x="388" y="382">점수 구간별 MAE·RMSE·예측평균 진단</text>
+<text class="dg-f" x="388" y="406">photo_model_trainer.py</text>
+</g>
+<g class="dg-node" id="image-eval-run-training" data-node="run-training" data-file="run_training.py · *_cuda.py · *_amp.py" data-desc="CSV와 이미지 폴더를 지정해 학습을 돌리고 가중치를 저장하는 진입점. CUDA·AMP 변형 파일이 함께 있다." tabindex="0">
+<title>학습 실행 (GPU) — CSV와 이미지 폴더를 지정해 학습을 돌리고 가중치를 저장하는 진입점. CUDA·AMP 변형 파일이 함께 있다.</title>
+<rect class="dg-bx" x="376" y="431" width="268" height="69" rx="3"/>
+<text class="dg-t" x="388" y="450">학습 실행 (GPU)</text>
+<text class="dg-s" x="388" y="467">CUDA / AMP 변형 트레이너</text>
+<text class="dg-f" x="388" y="491">run_training.py · *_cuda.py · *_amp.py</text>
+</g>
+<g class="dg-node" id="image-eval-weights" data-node="weights" data-file="models/…_384_weighted_mse_a1.pth" data-desc="학습 결과 state_dict. 추론기와 서비스가 이 파일을 읽는다." tabindex="0">
+<title>모델 가중치 .pth — 학습 결과 state_dict. 추론기와 서비스가 이 파일을 읽는다.</title>
+<rect class="dg-bx-state" x="376" y="516" width="268" height="54" rx="3"/>
+<text class="dg-t" x="388" y="535">모델 가중치 .pth</text>
+<text class="dg-f" x="388" y="561">models/…_384_weighted_mse_a1.pth</text>
+</g>
+<g class="dg-node" id="image-eval-evaluator" data-node="evaluator" data-file="photo_evaluator.py" data-desc="가중치를 로드해 이미지 한 장의 점수를 돌려주는 추론 클래스." tabindex="0">
+<title>PhotoEvaluator — 가중치를 로드해 이미지 한 장의 점수를 돌려주는 추론 클래스.</title>
+<rect class="dg-bx" x="712" y="286" width="224" height="84" rx="3"/>
+<text class="dg-t" x="724" y="305">PhotoEvaluator</text>
+<text class="dg-s" x="724" y="322">predict_score(image) → float</text>
+<text class="dg-s" x="724" y="337">학습과 동일한 전처리</text>
+<text class="dg-f" x="724" y="361">photo_evaluator.py</text>
+</g>
+<g class="dg-node" id="image-eval-web-server" data-node="web-server" data-file="SETUP" data-desc="Ruby 웹 서버가 PyCall로 PhotoEvaluator를 임포트해 호출하는 연동 설정. 서버 본체 코드는 이 저장소 밖에 있다." tabindex="0">
+<title>웹 서버 (Ruby · PyCall) — Ruby 웹 서버가 PyCall로 PhotoEvaluator를 임포트해 호출하는 연동 설정. 서버 본체 코드는 이 저장소 밖에 있다.</title>
+<rect class="dg-bx-ext" x="712" y="442" width="224" height="84" rx="3"/>
+<text class="dg-t" x="724" y="461">웹 서버 (Ruby · PyCall)</text>
+<text class="dg-s" x="724" y="478">pyimport photo_evaluator</text>
+<text class="dg-s" x="724" y="493">프로세스 시작 시 모델 상시 로드</text>
+<text class="dg-f" x="724" y="517">SETUP</text>
+</g>
+</svg>

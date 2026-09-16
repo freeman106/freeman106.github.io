@@ -1,0 +1,39 @@
+---
+title: Baro
+slug: baro
+oneLiner: Google 캘린더 동기화와 태스크 관리를 갖춘 개인 비서 제품의 기반. 재동기화에서 사용자 설정을 보존하는 규칙을 구현
+period:
+  start: 2026-04
+  end: 2026-06
+team:
+  size: 1
+  role: 설계 · 구현
+  contribution: OAuth, 캘린더 동기화, 일정 CRUD, 사용자별 태스크 API와 화면을 구현했다.
+scope: 일정·태스크 기반 기능까지 구현했다. Chat, LLM 연동, function calling, 브리핑, RAG는 미구현이다.
+stack: [Next.js, TypeScript, Prisma, Google Calendar API]
+roles: [backend, frontend]
+impact: 13
+public: true
+---
+
+## 문제
+
+개인 AI 비서 제품을 목표로, 먼저 일정과 태스크라는 기반을 만든 프로젝트다. 외부 캘린더의 데이터와 사용자가 앱 안에서 정한 설정이 한 화면에 섞이기 때문에, 동기화할 때 무엇을 덮어쓰고 무엇을 지킬지가 설계의 중심이었다.
+
+## 핵심 결정
+
+<Decision
+  title="외부 일정 동기화에서 사용자 설정을 보존했다"
+  context="Google Calendar의 목록과 일정을 다시 가져올 때, 앱 안에서 정한 숨김 여부와 정렬 순서까지 외부 데이터로 덮어쓰면 사용자 설정이 사라진다. 목록 조회가 실패해 fallback으로 흐를 때 로컬 미러를 지우면 데이터가 통째로 사라진다."
+  alternatives={[
+    '외부 데이터를 항상 정본으로 보고 전부 덮어쓴다',
+    '재동기화에서 hidden · sortOrder를 update 대상에서 제외하고, fallback 조회일 때는 목록 미러를 삭제하지 않는다',
+  ]}
+  choice="소유권을 나눠 보존했다."
+  why="외부가 소유한 필드와 사용자가 소유한 필드를 구분했다. 동기화는 transaction 안에서 처리한다."
+  outcome="코드에서 확인한 설계이며, 실제 사고 방지 건수는 측정하지 않았다."
+/>
+
+## 한계와 다음 단계
+
+- Chat, LLM 연결, function calling, 브리핑, pgvector 기반 RAG는 미구현이다. 완성된 AI 서비스로 소개하지 않는다.

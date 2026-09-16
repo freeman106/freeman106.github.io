@@ -1,0 +1,79 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatPeriod, formatResult } from '../lib/format';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index: number;
+}
+const { project, index } = Astro.props;
+const d = project.data;
+const results = d.result.filter((r) => r.value !== undefined).slice(0, 3);
+---
+
+<article class="featured reveal" style={`--i:${index}`}>
+  <div class="head">
+    <h3><a class="quiet" href={`/projects/${d.slug}`}>{d.title}</a></h3>
+    <span class="mono meta">{formatPeriod(d.period)}{d.period.tentative && <span class="tent"> · 확인 필요</span>}</span>
+  </div>
+  <p class="one">{d.oneLiner}</p>
+  {
+    results.length > 0 && (
+      <dl class="results">
+        {results.map((r) => (
+          <div>
+            <dt class="meta">{r.label}</dt>
+            <dd class="mono">{formatResult(r)}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+  <p class="stack mono meta">{d.stack.join(' · ')}</p>
+</article>
+
+<style>
+  .featured {
+    padding: var(--space-6) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .featured:last-child {
+    border-bottom: 0;
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .one {
+    margin: var(--space-2) 0 var(--space-4);
+    max-width: 60ch;
+  }
+  .results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4) var(--space-6);
+    margin: 0 0 var(--space-4);
+  }
+  .results div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-1);
+  }
+  .results dt {
+    font-size: var(--text-xs);
+  }
+  .results dd {
+    margin: 0;
+    color: var(--fg);
+    font-size: var(--text-lg);
+  }
+  .stack {
+    margin: 0;
+  }
+  .tent {
+    color: var(--accent);
+  }
+</style>

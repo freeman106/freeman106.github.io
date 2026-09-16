@@ -1,0 +1,247 @@
+---
+/**
+ * 직무별 제출용 PDF 의 원본. 브라우저 인쇄로 저장한다.
+ *   /print?roles=agent,mlops&limit=3
+ * 정적 빌드이므로 필터는 브라우저에서 적용한다. JS 가 없으면 전체가 보인다.
+ */
+import { getCollection } from 'astro:content';
+import QRCode from 'qrcode';
+import Base from '../layouts/Base.astro';
+import { SITE, ROLE_LABEL } from '../lib/site';
+import { formatPeriod, formatResult } from '../lib/format';
+
+const projects = (await getCollection('projects', ({ data }) => data.public)).sort(
+  (a, b) => a.data.impact - b.data.impact,
+);
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const qr = await QRCode.toString(siteUrl || 'https://example.com', { type: 'svg', margin: 0, width: 88 });
+const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
+const timeline = [
+  ['2026.08', 'AGENT24 해커톤 — 4인 팀, 에이전트 코어·데이터 계약'],
+  ['2025.03 – 2025.06', '뽈레 AI/ML 엔지니어 인턴'],
+  ['2022.04 – 2023.10', '카투사 행정병 — 경리 업무 자동화'],
+  ['2020.03 – 2026.08', '연세대학교 컴퓨터과학과 학사 (졸업)'],
+];
+---
+
+<Base title="Print" bare noindex>
+  <div class="toolbar no-print wrap">
+    <p class="meta">
+      이 페이지를 브라우저에서 인쇄(⌘P)해 PDF로 저장한다. 필터는 쿼리로 지정한다.
+      <span class="presets mono">
+        {Object.entries(ROLE_LABEL).map(([k, v]) => <a href={`/print?roles=${k}&limit=4`}>{v}</a>)}
+        <a href="/print">전체</a>
+      </span>
+    </p>
+  </div>
+
+  <div class="sheet">
+    <header class="ph">
+      <div>
+        <h1>{SITE.name} <span class="mono en">{SITE.nameEn}</span></h1>
+        <p class="pos">{SITE.positioning}</p>
+        <p class="mono meta targets" data-targets>{SITE.targets.join(' · ')}</p>
+        <p class="mono meta contact">
+          {SITE.email && <span>{SITE.email}</span>}
+          <span>{SITE.github.replace('https://', '')}</span>
+          <span data-site-url>{siteUrl.replace('https://', '')}</span>
+        </p>
+      </div>
+      <div class="qr" set:html={qr} />
+    </header>
+
+    <section class="plist" data-projects>
+      <h2 class="mono meta">프로젝트 <span data-filter-label></span></h2>
+      {
+        projects.map((p) => (
+          <article class="pp" data-roles={p.data.roles.join(',')} data-impact={p.data.impact} data-featured={p.data.featured ? '1' : '0'}>
+            <div class="pp-head">
+              <h3>{p.data.title}</h3>
+              <span class="mono meta">{formatPeriod(p.data.period)}{p.data.team.size > 1 && ` · ${p.data.team.size}인`}</span>
+            </div>
+            <p class="mono meta role">{p.data.team.role} · {p.data.roles.map((r) => ROLE_LABEL[r]).join(' · ')}</p>
+            <p class="one">{p.data.oneLiner}</p>
+            <p class="contrib">{p.data.team.contribution}</p>
+            {p.data.result.length > 0 && (
+              <ul class="res">
+                {p.data.result.map((r) => (
+                  <li>
+                    <span>{r.label}</span>
+                    {r.value !== undefined && <span class="mono v">{formatResult(r)}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p class="mono meta stack">{p.data.stack.join(' · ')}</p>
+          </article>
+        ))
+      }
+    </section>
+
+    <section class="tl">
+      <h2 class="mono meta">타임라인</h2>
+      <ul>
+        {timeline.map(([w, t]) => <li><span class="mono meta">{w}</span><span>{t}</span></li>)}
+      </ul>
+      <p class="mono meta">OPIc IH · COS Pro 1급 (Python)</p>
+    </section>
+
+    <footer class="pf mono meta">
+      <span>{siteUrl}</span>
+      <span>{today}</span>
+    </footer>
+  </div>
+</Base>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const roles = (params.get('roles') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  const limit = Number(params.get('limit')) || 6;
+  const label: Record<string, string> = { agent: '에이전트', mlops: 'MLOps', backend: '백엔드', data: '데이터', frontend: '프론트엔드' };
+
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-projects] .pp'));
+  let shown = 0;
+  for (const el of items) {
+    const mine = (el.dataset.roles ?? '').split(',');
+    const match = roles.length === 0 || roles.some((r) => mine.includes(r));
+    const keep = match && shown < limit;
+    el.hidden = !keep;
+    if (keep) shown++;
+  }
+  const fl = document.querySelector('[data-filter-label]');
+  if (fl) fl.textContent = roles.length ? `— ${roles.map((r) => label[r] ?? r).join(' · ')} · ${shown}` : `— 상위 ${shown}`;
+</script>
+
+<style>
+  .toolbar {
+    padding: var(--space-4) var(--space-6);
+  }
+  .presets {
+    margin-left: var(--space-2);
+    display: inline-flex;
+    gap: var(--space-3);
+  }
+  .sheet {
+    max-width: 190mm;
+    margin: 0 auto;
+    padding: var(--space-6);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .ph {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-6);
+    align-items: flex-start;
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: var(--space-4);
+  }
+  .ph h1 {
+    font-size: 22px;
+  }
+  .ph .en {
+    font-weight: 400;
+    color: var(--fg-meta);
+    font-size: 13px;
+    margin-left: var(--space-1);
+  }
+  .pos {
+    margin: var(--space-2) 0 var(--space-1);
+    color: var(--fg);
+    max-width: 60ch;
+  }
+  .targets,
+  .contact {
+    margin: 0;
+  }
+  .contact span + span::before {
+    content: ' · ';
+  }
+  .qr {
+    flex: 0 0 auto;
+    width: 88px;
+    height: 88px;
+  }
+  .qr :global(svg) {
+    width: 88px;
+    height: 88px;
+  }
+  h2 {
+    margin: var(--space-6) 0 var(--space-2);
+    font-weight: 500;
+    font-size: 12px;
+  }
+  .pp {
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--line);
+    break-inside: avoid;
+  }
+  .pp-head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    align-items: baseline;
+  }
+  .pp h3 {
+    font-size: 15px;
+  }
+  .role {
+    margin: 0 0 var(--space-1);
+  }
+  .one {
+    margin: 0 0 var(--space-1);
+    color: var(--fg);
+  }
+  .contrib {
+    margin: 0 0 var(--space-1);
+  }
+  .res {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+  }
+  .res .v {
+    color: var(--fg);
+    margin-left: var(--space-1);
+  }
+  .stack {
+    margin: 0;
+  }
+  .tl ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-2);
+  }
+  .tl li {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: var(--space-3);
+    padding: 2px 0;
+  }
+  .pf {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    padding-top: var(--space-2);
+    margin-top: var(--space-6);
+  }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  @media print {
+    :root {
+      --bg: #fff;
+    }
+    .sheet {
+      max-width: none;
+      padding: 0;
+    }
+    .toolbar {
+      display: none;
+    }
+  }
+</style>

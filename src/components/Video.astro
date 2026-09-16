@@ -1,0 +1,28 @@
+---
+/** 30초 이내 데모 영상. 라이브 데모 대신 쓴다. */
+interface Props {
+  src: string;
+  caption?: string;
+  poster?: string;
+}
+const { src, caption, poster } = Astro.props;
+---
+
+<figure class="video">
+  <video controls muted playsinline preload="metadata" src={src} poster={poster}></video>
+  {caption && <figcaption class="meta">{caption}</figcaption>}
+</figure>
+
+<style>
+  .video {
+    margin: var(--space-8) 0;
+  }
+  video {
+    display: block;
+    width: 100%;
+    background: #000;
+  }
+  figcaption {
+    margin-top: var(--space-2);
+  }
+</style>

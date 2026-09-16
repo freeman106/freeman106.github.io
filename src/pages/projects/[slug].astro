@@ -1,0 +1,103 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectMeta from '../../components/ProjectMeta.astro';
+import Diagram from '../../components/Diagram.astro';
+import Decision from '../../components/Decision.astro';
+import Video from '../../components/Video.astro';
+import EpisodeList from '../../components/EpisodeList.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects', ({ data }) => data.public);
+  return projects.map((p) => ({ params: { slug: p.data.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+const episodes = (
+  await getCollection('episodes', ({ data }) => data.public && data.project === d.slug)
+).sort((a, b) => a.data.order - b.data.order);
+
+// 인터랙티브 다이어그램은 사이트에서 이 한 곳에만 쓴다.
+const INTERACTIVE_SLUG = 'agent24';
+---
+
+<Base title={d.title} description={d.oneLiner} ogImage={`/og/${d.slug}.png`}>
+  <article class="project">
+    <header class="reveal" style="--i:1">
+      <p class="mono meta crumb"><a class="quiet" href="/#projects">Projects</a></p>
+      <h1>{d.title}</h1>
+      <p class="lead">{d.oneLiner}</p>
+    </header>
+
+    <div class="reveal" style="--i:2">
+      <ProjectMeta project={project} />
+    </div>
+
+    {
+      d.diagram && (
+        <div class="reveal" style="--i:3">
+          <Diagram
+            name={d.diagram}
+            interactive={d.slug === INTERACTIVE_SLUG}
+            caption="아키텍처. 박스는 실제 코드의 파일·모듈에 대응한다. 점선은 저장소 밖의 외부 요소."
+          />
+        </div>
+      )
+    }
+
+    <div class="prose reveal" style="--i:4">
+      <Content components={{ Decision, Video }} />
+    </div>
+
+    {episodes.length > 0 && <EpisodeList episodes={episodes} />}
+
+    <nav class="pnav mono meta">
+      <a class="quiet" href="/#projects">← 프로젝트 목록</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .project {
+    padding-top: var(--space-8);
+  }
+  .crumb {
+    margin-bottom: var(--space-2);
+  }
+  .lead {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+    color: var(--fg-body);
+    max-width: 60ch;
+  }
+  .prose {
+    margin-top: var(--space-8);
+  }
+  .prose :global(h2) {
+    font-size: var(--text-lg);
+    margin-top: var(--space-12);
+    margin-bottom: var(--space-4);
+  }
+  .prose :global(h3) {
+    font-size: var(--text-base);
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-3);
+  }
+  .prose :global(p),
+  .prose :global(li) {
+    max-width: 68ch;
+  }
+  .prose :global(table) {
+    margin: var(--space-4) 0 var(--space-6);
+  }
+  .prose :global(.decision + .decision) {
+    margin-top: var(--space-2);
+  }
+  .pnav {
+    margin-top: var(--space-12);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+</style>

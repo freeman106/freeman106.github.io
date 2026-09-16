@@ -1,0 +1,103 @@
+/* 디자인 토큰. 색·간격·타입 스케일은 여기서만 정한다. */
+:root {
+  color-scheme: light;
+
+  --bg: #fafafa;
+  --bg-elev: #ffffff;
+  --fg: #111111;
+  --fg-body: #444444;
+  --fg-meta: #6e6e6e;
+  --line: #e6e6e6;
+  --line-strong: #cfcfcf;
+  --accent: #2456c9;
+  --accent-soft: rgba(36, 86, 201, 0.1);
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+
+  --measure: 720px;
+
+  /* 4/8px 배수만 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+
+  --lh-body: 1.7;
+  --lh-tight: 1.3;
+  --dur: 150ms;
+
+  /* 다이어그램 SVG 가 읽는 토큰 */
+  --dg-box: #ffffff;
+  --dg-ext: #f3f3f3;
+  --dg-state: #fafafa;
+  --dg-line: #cfcfcf;
+  --dg-group: #e6e6e6;
+  --dg-text: #111111;
+  --dg-body: #555555;
+  --dg-meta: #6e6e6e;
+  --dg-arrow: #9a9a9a;
+  --dg-accent: var(--accent);
+}
+
+/* 다크는 색 반전이 아니라 별도 튜닝. 대비를 한 단계 낮춘다. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a0a0a;
+  --bg-elev: #141414;
+  --fg: #e4e4e4;
+  --fg-body: #b0b0b0;
+  --fg-meta: #7c7c7c;
+  --line: #232323;
+  --line-strong: #363636;
+  --accent: #7ea3ff;
+  --accent-soft: rgba(126, 163, 255, 0.14);
+  --dg-box: #141414;
+  --dg-ext: #1a1a1a;
+  --dg-state: #101010;
+  --dg-line: #3a3a3a;
+  --dg-group: #262626;
+  --dg-text: #e4e4e4;
+  --dg-body: #b0b0b0;
+  --dg-meta: #7c7c7c;
+  --dg-arrow: #6a6a6a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0a0a0a;
+    --bg-elev: #141414;
+    --fg: #e4e4e4;
+    --fg-body: #b0b0b0;
+    --fg-meta: #7c7c7c;
+    --line: #232323;
+    --line-strong: #363636;
+    --accent: #7ea3ff;
+    --accent-soft: rgba(126, 163, 255, 0.14);
+    --dg-box: #141414;
+    --dg-ext: #1a1a1a;
+    --dg-state: #101010;
+    --dg-line: #3a3a3a;
+    --dg-group: #262626;
+    --dg-text: #e4e4e4;
+    --dg-body: #b0b0b0;
+    --dg-meta: #7c7c7c;
+    --dg-arrow: #6a6a6a;
+  }
+}

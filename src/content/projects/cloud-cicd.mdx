@@ -1,0 +1,37 @@
+---
+title: 테스트부터 인프라 배포까지 — Cloud Computing 과제
+slug: cloud-cicd
+oneLiner: 제공된 웹앱을 대상으로 GitHub Actions 워크플로와 Terraform · Kubernetes 구성을 작성해 재현 가능한 배포 절차를 만든 과제
+period:
+  start: 2025-11
+  end: 2025-12
+team:
+  size: 1
+  role: CI/CD · IaC 구성
+  contribution: test/build/deploy/destroy 워크플로와 Kubernetes namespace · deployment · service · config · secret 구성을 작성했다. 앱 자체는 제공됐다.
+scope: 워크플로 4종과 IaC 구성을 완료했다. 현재 클러스터 가동과 CI 성공 상태는 확인하지 않았다.
+result:
+  - label: 워크플로
+    value: 4
+    unit: 종
+    note: test · build · deploy · destroy
+stack: [GitHub Actions, Terraform, Kubernetes, Docker, AWS]
+roles: [mlops, backend]
+impact: 14
+public: true
+---
+
+## 문제
+
+제공된 웹앱을 원격 클러스터에 배포하는 과제다. 테스트, 이미지 빌드, 원격 배포, 인프라 생성과 정리를 사람이 손으로 하지 않고 재현 가능한 절차로 만드는 것이 목표였다. Docker와 AWS 배포 선행 과제에서 이 mini-project로 발전했다.
+
+## 구현
+
+- GitHub Actions 워크플로 4종: test, build, deploy, destroy.
+- Terraform으로 Kubernetes namespace, deployment, service, config, secret 구성.
+- 앱 코드는 제공됐고, 내 변경 이력은 워크플로와 IaC에 있다.
+
+## 한계와 다음 단계
+
+- 현재 클러스터가 떠 있는지, 마지막 CI가 성공했는지는 확인하지 않았다.
+- 가장 까다로웠던 배포 오류와 그 해결은 기록이 남아 있지 않아 적지 않는다.

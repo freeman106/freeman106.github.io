@@ -1,0 +1,60 @@
+<button class="theme-toggle mono" type="button" data-theme-toggle title="테마 전환">
+  <span data-when="light">Dark</span><span data-when="dark">Light</span>
+</button>
+
+<style>
+  .theme-toggle {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--fg-meta);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    text-underline-offset: 0.18em;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--dur) ease;
+  }
+  .theme-toggle:hover,
+  .theme-toggle:focus-visible {
+    text-decoration-color: currentColor;
+  }
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  /* 현재 모드에 맞는 문구만 보인다. */
+  [data-when='dark'] {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) [data-when='light'] {
+    display: none;
+  }
+  :global(:root[data-theme='dark']) [data-when='dark'] {
+    display: inline;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) [data-when='light'] {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) [data-when='dark'] {
+      display: inline;
+    }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+  const current = () => root.dataset.theme || (media.matches ? 'dark' : 'light');
+  for (const btn of document.querySelectorAll('[data-theme-toggle]')) {
+    btn.addEventListener('click', () => {
+      const next = current() === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+    });
+  }
+</script>

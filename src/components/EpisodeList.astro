@@ -1,0 +1,82 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+
+interface Props {
+  episodes: CollectionEntry<'episodes'>[];
+}
+const { episodes } = Astro.props;
+const rendered = await Promise.all(
+  episodes.map(async (e) => ({ e, Content: (await render(e)).Content, hasBody: e.body?.trim().length ? true : false })),
+);
+---
+
+<section class="episodes">
+  <div class="section-label">
+    <h2>더 읽기</h2>
+    <span class="mono meta">{episodes.length}</span>
+  </div>
+  {
+    rendered.map(({ e, Content, hasBody }) => (
+      <details>
+        <summary>
+          <span>{e.data.title}</span>
+          <span class="mono meta">{e.data.when}</span>
+        </summary>
+        <dl class="ep">
+          <div>
+            <dt class="mono meta">상황</dt>
+            <dd>{e.data.decision.context}</dd>
+          </div>
+          <div>
+            <dt class="mono meta">대안</dt>
+            <dd>{e.data.decision.alternatives.join(' / ')}</dd>
+          </div>
+          <div>
+            <dt class="mono meta">선택</dt>
+            <dd>
+              <strong>{e.data.decision.choice}</strong> {e.data.decision.why}
+            </dd>
+          </div>
+          <div>
+            <dt class="mono meta">결과</dt>
+            <dd>{e.data.decision.outcome}</dd>
+          </div>
+        </dl>
+        {hasBody && (
+          <div class="ep-body">
+            <Content />
+          </div>
+        )}
+      </details>
+    ))
+  }
+</section>
+
+<style>
+  .episodes {
+    margin-top: var(--space-12);
+  }
+  .ep {
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+    font-size: 15px;
+  }
+  .ep > div {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: var(--space-3);
+  }
+  .ep dd {
+    margin: 0;
+  }
+  .ep-body {
+    font-size: 15px;
+  }
+  @media (max-width: 480px) {
+    .ep > div {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+</style>

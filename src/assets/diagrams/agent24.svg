@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1092 758" width="1092" height="758" role="img" aria-labelledby="agent24-title" data-diagram="agent24">
+<title id="agent24-title">AGENT24 지식그래프 에이전트 아키텍처</title>
+<style>
+  .dg-grp { fill: none; stroke: var(--dg-group, #e2e2e2); stroke-width: 1; }
+  .dg-grp-l { font: 500 11px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); letter-spacing: .04em; }
+  .dg-bx { fill: var(--dg-box, #ffffff); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-bx-ext { fill: var(--dg-ext, #f4f4f4); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; stroke-dasharray: 4 3; }
+  .dg-bx-state { fill: var(--dg-state, #fafafa); stroke: var(--dg-line, #c4c4c4); stroke-width: 1; }
+  .dg-node:hover rect, .dg-node:focus rect, .dg-node.is-active rect { stroke: var(--dg-accent, #2563eb); }
+  .dg-node:focus { outline: none; }
+  .dg-t { font: 500 13px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-text, #111); }
+  .dg-s { font: 11px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-body, #555); }
+  .dg-f { font: 10.5px ui-monospace, "JetBrains Mono", Menlo, monospace; fill: var(--dg-meta, #888); }
+  .dg-ar { fill: none; stroke: var(--dg-arrow, #9a9a9a); stroke-width: 1.2; marker-end: url(#agent24-ah); }
+  .dg-ar-d { stroke-dasharray: 4 3; }
+  .dg-al { font: 10.5px Pretendard, "Pretendard Variable", -apple-system, system-ui, sans-serif; fill: var(--dg-meta, #888); }
+  .dg-node { cursor: default; }
+</style>
+<defs><marker id="agent24-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--dg-arrow, #9a9a9a)"/></marker></defs>
+<g class="dg-group" data-group="browser">
+<rect class="dg-grp" x="24" y="24" width="250" height="543" rx="4"/>
+<text class="dg-grp-l" x="36" y="40">브라우저 · React (src/)</text>
+</g>
+<g class="dg-group" data-group="node">
+<rect class="dg-grp" x="330" y="24" width="310" height="543" rx="4"/>
+<text class="dg-grp-l" x="342" y="40">Node 서버 (scripts/)</text>
+</g>
+<g class="dg-group" data-group="python">
+<rect class="dg-grp" x="700" y="24" width="368" height="543" rx="4"/>
+<text class="dg-grp-l" x="712" y="40">Python 에이전트 (agent/)</text>
+</g>
+<g class="dg-group" data-group="contract">
+<rect class="dg-grp" x="24" y="591" width="1044" height="143" rx="4"/>
+<text class="dg-grp-l" x="36" y="607">계약 (contract/) — 4인 병렬 개발의 단일 원본</text>
+</g>
+<path class="dg-ar" d="M258,501.5 H302 V124 H346"/>
+<text class="dg-al" x="302" y="116" text-anchor="middle">POST /run</text>
+<path class="dg-ar" d="M624,95.19999999999999 H670 V90.69999999999999 H716"/>
+<text class="dg-al" x="670" y="84.69999999999999" text-anchor="middle">spawn</text>
+<path class="dg-ar" d="M716,148.75 H670 V160 H624"/>
+<text class="dg-al" x="670" y="178.75" text-anchor="middle">stdout JSONL</text>
+<path class="dg-ar" d="M956,116.5 H962 V78 H968"/>
+<path class="dg-ar" d="M796,181 V197"/>
+<path class="dg-ar" d="M932,181 V189 H972 V197"/>
+<path class="dg-ar" d="M796,281 V297"/>
+<path class="dg-ar" d="M884,381 V397"/>
+<path class="dg-ar dg-ar-d" d="M716,431.5 H672 V188.79999999999998 H624"/>
+<text class="dg-al" x="672" y="453.5" text-anchor="middle">GET /graph</text>
+<path class="dg-ar dg-ar-d" d="M190,591 V567"/>
+<text class="dg-al" x="198" y="583" text-anchor="start">계약 타입 import (재선언 금지)</text>
+<path class="dg-ar dg-ar-d" d="M884,591 V567"/>
+<text class="dg-al" x="892" y="583" text-anchor="start">from contract.schema import</text>
+<g class="dg-node" id="agent24-app" data-node="app" data-file="src/App.tsx · src/pdfNote.ts" data-desc="화면 상태와 세 가지 입력 경로를 관리하는 루트 컴포넌트." tabindex="0">
+<title>App.tsx — 화면 상태와 세 가지 입력 경로를 관리하는 루트 컴포넌트.</title>
+<rect class="dg-bx" x="40" y="52" width="218" height="84" rx="3"/>
+<text class="dg-t" x="52" y="71">App.tsx</text>
+<text class="dg-s" x="52" y="88">입력: 대화 붙여넣기 · 공유 링크</text>
+<text class="dg-s" x="52" y="103">강의안 PDF (pdfjs로 텍스트 추출)</text>
+<text class="dg-f" x="52" y="127">src/App.tsx · src/pdfNote.ts</text>
+</g>
+<g class="dg-node" id="agent24-graph-view" data-node="graph-view" data-file="components/Graph.tsx · layout.ts" data-desc="백엔드는 구조만 주고 좌표는 프론트가 정한다는 경계를 코드로 구현한 부분." tabindex="0">
+<title>Graph · layout — 백엔드는 구조만 주고 좌표는 프론트가 정한다는 경계를 코드로 구현한 부분.</title>
+<rect class="dg-bx" x="40" y="152" width="218" height="84" rx="3"/>
+<text class="dg-t" x="52" y="171">Graph · layout</text>
+<text class="dg-s" x="52" y="188">그래프 렌더 · 단원별 세로 배치</text>
+<text class="dg-s" x="52" y="203">좌표는 프론트 로컬 (계약에 없음)</text>
+<text class="dg-f" x="52" y="227">components/Graph.tsx · layout.ts</text>
+</g>
+<g class="dg-node" id="agent24-stream-panel" data-node="stream-panel" data-file="components/StreamPanel.tsx" data-desc="한 스트림을 두 뷰로 보여주는 패널. 대회 규칙(원본 이벤트 무가공 출력)과 사람이 읽는 요약을 함께 만족한다." tabindex="0">
+<title>StreamPanel — 한 스트림을 두 뷰로 보여주는 패널. 대회 규칙(원본 이벤트 무가공 출력)과 사람이 읽는 요약을 함께 만족한다.</title>
+<rect class="dg-bx" x="40" y="252" width="218" height="84" rx="3"/>
+<text class="dg-t" x="52" y="271">StreamPanel</text>
+<text class="dg-s" x="52" y="288">raw 뷰 / 요약 뷰 토글</text>
+<text class="dg-s" x="52" y="303">raw만 있는 이벤트는 요약 뷰에서 제외</text>
+<text class="dg-f" x="52" y="327">components/StreamPanel.tsx</text>
+</g>
+<g class="dg-node" id="agent24-note" data-node="note" data-file="components/NoteWorkspace.tsx" data-desc="학생이 어디서 막혔는지를 대화 원문 근거와 함께 보여주는 화면." tabindex="0">
+<title>NoteWorkspace · NodeDetail — 학생이 어디서 막혔는지를 대화 원문 근거와 함께 보여주는 화면.</title>
+<rect class="dg-bx" x="40" y="352" width="218" height="84" rx="3"/>
+<text class="dg-t" x="52" y="371">NoteWorkspace · NodeDetail</text>
+<text class="dg-s" x="52" y="388">노드 문서를 이어 붙인 노트</text>
+<text class="dg-s" x="52" y="403">약점 코멘트를 원문 인용과 함께 표시</text>
+<text class="dg-f" x="52" y="427">components/NoteWorkspace.tsx</text>
+</g>
+<g class="dg-node" id="agent24-agent-api-client" data-node="agent-api-client" data-file="src/agentApi.ts · src/mock.ts" data-desc="API 키가 없는 팀원의 브라우저는 자동으로 목 데이터로 흐른다." tabindex="0">
+<title>agentApi.ts — API 키가 없는 팀원의 브라우저는 자동으로 목 데이터로 흐른다.</title>
+<rect class="dg-bx" x="40" y="452" width="218" height="99" rx="3"/>
+<text class="dg-t" x="52" y="471">agentApi.ts</text>
+<text class="dg-s" x="52" y="488">fetch로 SSE를 직접 읽어 파싱</text>
+<text class="dg-s" x="52" y="503">status가 불가면 mock.ts로 동작</text>
+<text class="dg-s" x="52" y="518">토글 없음 — 환경이 스스로 답한다</text>
+<text class="dg-f" x="52" y="542">src/agentApi.ts · src/mock.ts</text>
+</g>
+<g class="dg-node" id="agent24-agent-api" data-node="agent-api" data-file="scripts/agent-api.mjs" data-desc="서버를 만들지 않고 핸들러 함수 하나만 돌려준다. 개발과 배포가 같은 함수를 마운트한다." tabindex="0">
+<title>agent-api.mjs · createAgentApi — 서버를 만들지 않고 핸들러 함수 하나만 돌려준다. 개발과 배포가 같은 함수를 마운트한다.</title>
+<rect class="dg-bx" x="346" y="52" width="278" height="144" rx="3"/>
+<text class="dg-t" x="358" y="71">agent-api.mjs · createAgentApi</text>
+<text class="dg-s" x="358" y="88">/status /graph /run /lecture</text>
+<text class="dg-s" x="358" y="103">/question /share /undo /redo</text>
+<text class="dg-s" x="358" y="118">세션 쿠키로 접속자별 상태 격리</text>
+<text class="dg-s" x="358" y="133">동시 실행 상한 (메모리 근거)</text>
+<text class="dg-s" x="358" y="148">15초 heartbeat · JSONL → SSE 중계</text>
+<text class="dg-s" x="358" y="163">(req, res) =&gt; boolean 함수 하나</text>
+<text class="dg-f" x="358" y="187">scripts/agent-api.mjs</text>
+</g>
+<g class="dg-node" id="agent24-vite-mount" data-node="vite-mount" data-file="vite.config.ts" data-desc="개발 서버에서 같은 핸들러를 미들웨어로 건다." tabindex="0">
+<title>vite.config.ts — 개발 서버에서 같은 핸들러를 미들웨어로 건다.</title>
+<rect class="dg-bx" x="346" y="212" width="132" height="69" rx="3"/>
+<text class="dg-t" x="358" y="231">vite.config.ts</text>
+<text class="dg-s" x="358" y="248">개발: 미들웨어 마운트</text>
+<text class="dg-f" x="358" y="272">vite.config.ts</text>
+</g>
+<g class="dg-node" id="agent24-serve-mount" data-node="serve-mount" data-file="scripts/serve.mjs" data-desc="정적 파일과 API를 같은 오리진에서 내보내는 배포 서버. 표준 모듈만 쓴다." tabindex="0">
+<title>serve.mjs — 정적 파일과 API를 같은 오리진에서 내보내는 배포 서버. 표준 모듈만 쓴다.</title>
+<rect class="dg-bx" x="492" y="212" width="132" height="69" rx="3"/>
+<text class="dg-t" x="504" y="231">serve.mjs</text>
+<text class="dg-s" x="504" y="248">배포: node:http + dist/</text>
+<text class="dg-f" x="504" y="272">scripts/serve.mjs</text>
+</g>
+<g class="dg-node" id="agent24-share-parser" data-node="share-parser" data-file="scripts/chatgpt-share.mjs" data-desc="내부 경로를 고정하지 않고 메시지처럼 생긴 객체를 찾는다. 배포마다 구조가 바뀌어도 살아남게 한 선택." tabindex="0">
+<title>chatgpt-share.mjs — 내부 경로를 고정하지 않고 메시지처럼 생긴 객체를 찾는다. 배포마다 구조가 바뀌어도 살아남게 한 선택.</title>
+<rect class="dg-bx" x="346" y="297" width="278" height="84" rx="3"/>
+<text class="dg-t" x="358" y="316">chatgpt-share.mjs</text>
+<text class="dg-s" x="358" y="333">공유 페이지 turbo-stream 페이로드 inflate</text>
+<text class="dg-s" x="358" y="348">author.role + content.parts 객체 재귀 수집</text>
+<text class="dg-f" x="358" y="372">scripts/chatgpt-share.mjs</text>
+</g>
+<g class="dg-node" id="agent24-dockerfile" data-node="dockerfile" data-file="Dockerfile" data-desc="파이썬 서브프로세스·분 단위 실행·파일 상태라는 세 제약에 맞춰 컨테이너를 택했다." tabindex="0">
+<title>Dockerfile — 파이썬 서브프로세스·분 단위 실행·파일 상태라는 세 제약에 맞춰 컨테이너를 택했다.</title>
+<rect class="dg-bx" x="346" y="397" width="278" height="84" rx="3"/>
+<text class="dg-t" x="358" y="416">Dockerfile</text>
+<text class="dg-s" x="358" y="433">2단계 빌드 · contract:check → build</text>
+<text class="dg-s" x="358" y="448">KG_STATE_DIR 고정 · 상시 구동 컨테이너</text>
+<text class="dg-f" x="358" y="472">Dockerfile</text>
+</g>
+<g class="dg-node" id="agent24-main" data-node="main" data-file="agent/main.py · agent/config.py" data-desc="단계를 강제하지 않고 목표만 준다. 대화 에이전트에는 단원 생성 툴을 아예 주지 않아 권한을 코드로 제한한다." tabindex="0">
+<title>main.py — 단계를 강제하지 않고 목표만 준다. 대화 에이전트에는 단원 생성 툴을 아예 주지 않아 권한을 코드로 제한한다.</title>
+<rect class="dg-bx" x="716" y="52" width="240" height="129" rx="3"/>
+<text class="dg-t" x="728" y="71">main.py</text>
+<text class="dg-s" x="728" y="88">Agents SDK Runner.run_streamed</text>
+<text class="dg-s" x="728" y="103">프롬프트 2종 · 툴 목록 2종</text>
+<text class="dg-s" x="728" y="118">max_turns 80 (강의안) / 20 (대화)</text>
+<text class="dg-s" x="728" y="133">_drive: SDK 이벤트 → 계약 C 변환</text>
+<text class="dg-s" x="728" y="148">상한 도달 시 limit 이벤트</text>
+<text class="dg-f" x="728" y="172">agent/main.py · agent/config.py</text>
+</g>
+<g class="dg-node" id="agent24-openai" data-node="openai" data-file="" data-desc="Agents SDK가 호출하는 외부 모델 API." tabindex="0">
+<title>OpenAI — Agents SDK가 호출하는 외부 모델 API.</title>
+<rect class="dg-bx-ext" x="968" y="52" width="84" height="52" rx="3"/>
+<text class="dg-t" x="980" y="71">OpenAI</text>
+<text class="dg-s" x="980" y="88">모델 호출</text>
+</g>
+<g class="dg-node" id="agent24-tools" data-node="tools" data-file="agent/tools.py" data-desc="툴은 조회하거나 변경만 한다. 판단은 전부 모델이 한다는 원칙이 여기서 지켜진다." tabindex="0">
+<title>tools.py — 툴은 조회하거나 변경만 한다. 판단은 전부 모델이 한다는 원칙이 여기서 지켜진다.</title>
+<rect class="dg-bx" x="716" y="197" width="160" height="84" rx="3"/>
+<text class="dg-t" x="728" y="216">tools.py</text>
+<text class="dg-s" x="728" y="233">@function_tool 10종</text>
+<text class="dg-s" x="728" y="248">조회 4 · 변경 6 · LLM 호출 없음</text>
+<text class="dg-f" x="728" y="272">agent/tools.py</text>
+</g>
+<g class="dg-node" id="agent24-stream" data-node="stream" data-file="agent/stream.py" data-desc="모든 이벤트를 JSONL로 남겨 키 없는 팀원의 픽스처가 된다." tabindex="0">
+<title>stream.py — 모든 이벤트를 JSONL로 남겨 키 없는 팀원의 픽스처가 된다.</title>
+<rect class="dg-bx" x="892" y="197" width="160" height="84" rx="3"/>
+<text class="dg-t" x="904" y="216">stream.py</text>
+<text class="dg-s" x="904" y="233">raw 층 + 요약 층 한 스트림</text>
+<text class="dg-s" x="904" y="248">stdout JSONL · JSONL 기록</text>
+<text class="dg-f" x="904" y="272">agent/stream.py</text>
+</g>
+<g class="dg-node" id="agent24-store" data-node="store" data-file="agent/store.py" data-desc="DB 없이 JSON 파일 하나. 같은 실행 안의 중복 생성은 저장소가 막고, 검색은 예측 가능한 문자열 매칭만 쓴다." tabindex="0">
+<title>store.py · GraphStore — DB 없이 JSON 파일 하나. 같은 실행 안의 중복 생성은 저장소가 막고, 검색은 예측 가능한 문자열 매칭만 쓴다.</title>
+<rect class="dg-bx" x="716" y="297" width="336" height="84" rx="3"/>
+<text class="dg-t" x="728" y="316">store.py · GraphStore</text>
+<text class="dg-s" x="728" y="333">graph.json 단일 파일 · 프로세스 잠금</text>
+<text class="dg-s" x="728" y="348">slug 중복 흡수 · 정규화 문자열 검색 (임베딩 없음)</text>
+<text class="dg-f" x="728" y="372">agent/store.py</text>
+</g>
+<g class="dg-node" id="agent24-state-files" data-node="state-files" data-file="KG_STATE_DIR/sessions/&lt;id&gt;/…" data-desc="세션·과목별로 디렉터리를 나눈 파일 상태. 다중 인스턴스 확장 시 공유 저장이 필요하다는 한계를 배포 시점에 문서화했다." tabindex="0">
+<title>그래프 상태 파일 — 세션·과목별로 디렉터리를 나눈 파일 상태. 다중 인스턴스 확장 시 공유 저장이 필요하다는 한계를 배포 시점에 문서화했다.</title>
+<rect class="dg-bx-state" x="716" y="397" width="336" height="69" rx="3"/>
+<text class="dg-t" x="728" y="416">그래프 상태 파일</text>
+<text class="dg-s" x="728" y="433">graph.json · last_run.jsonl · undo/redo 스냅샷</text>
+<text class="dg-f" x="728" y="457">KG_STATE_DIR/sessions/&lt;id&gt;/…</text>
+</g>
+<g class="dg-node" id="agent24-schema" data-node="schema" data-file="contract/schema.py · contract/schema.ts" data-desc="세 층으로 나눈 데이터 계약. 담당자마다 읽어야 할 층이 다르다." tabindex="0">
+<title>schema.py ↔ schema.ts — 세 층으로 나눈 데이터 계약. 담당자마다 읽어야 할 층이 다르다.</title>
+<rect class="dg-bx" x="40" y="619" width="300" height="99" rx="3"/>
+<text class="dg-t" x="52" y="638">schema.py ↔ schema.ts</text>
+<text class="dg-s" x="52" y="655">계약 A 그래프 상태 · B 툴 시그니처 · C 스트림 이벤트</text>
+<text class="dg-s" x="52" y="670">좌표 없음 · 간선 방향 규칙을 상수로</text>
+<text class="dg-s" x="52" y="685">pydantic 원본 · TypeScript 사본</text>
+<text class="dg-f" x="52" y="709">contract/schema.py · contract/schema.ts</text>
+</g>
+<g class="dg-node" id="agent24-lock-fixtures" data-node="lock-fixtures" data-file="contract/.lock · contract/fixtures/" data-desc="계약 변경 권한을 한 명으로 묶고, 픽스처로 나머지 세 명이 독립 개발하게 했다." tabindex="0">
+<title>.lock · fixtures/ — 계약 변경 권한을 한 명으로 묶고, 픽스처로 나머지 세 명이 독립 개발하게 했다.</title>
+<rect class="dg-bx" x="356" y="619" width="300" height="99" rx="3"/>
+<text class="dg-t" x="368" y="638">.lock · fixtures/</text>
+<text class="dg-s" x="368" y="655">소유자 1인의 해시 잠금</text>
+<text class="dg-s" x="368" y="670">seed_graph · reference · 대화 픽스처</text>
+<text class="dg-s" x="368" y="685">실제 실행 기록으로 키 없이 개발</text>
+<text class="dg-f" x="368" y="709">contract/.lock · contract/fixtures/</text>
+</g>
+<g class="dg-node" id="agent24-contract-check" data-node="contract-check" data-file="scripts/contract-check.mjs · contract-seal.mjs" data-desc="계약이 깨진 상태로는 작업을 시작할 수 없게 하는 200ms 검사. 파이썬이 없는 프론트 담당자도 통과해야 하므로 Node만 쓴다." tabindex="0">
+<title>contract-check.mjs (predev · Node만) — 계약이 깨진 상태로는 작업을 시작할 수 없게 하는 200ms 검사. 파이썬이 없는 프론트 담당자도 통과해야 하므로 Node만 쓴다.</title>
+<rect class="dg-bx" x="672" y="619" width="380" height="99" rx="3"/>
+<text class="dg-t" x="684" y="638">contract-check.mjs (predev · Node만)</text>
+<text class="dg-s" x="684" y="655">① 잠금 해시  ② py↔ts 필드 대조</text>
+<text class="dg-s" x="684" y="670">③ 계약 타입 재선언 스캔  ④ 픽스처 간선 무결성</text>
+<text class="dg-s" x="684" y="685">실패하면 dev·agent 실행 자체가 시작되지 않음</text>
+<text class="dg-f" x="684" y="709">scripts/contract-check.mjs · contract-seal.mjs</text>
+</g>
+</svg>

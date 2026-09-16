@@ -1,0 +1,147 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatPeriod, formatResult } from '../lib/format';
+import { ROLE_LABEL } from '../lib/site';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+const { project } = Astro.props;
+const d = project.data;
+const links = [
+  d.links.repo && { label: '코드', href: d.links.repo },
+  d.links.model && { label: '모델', href: d.links.model },
+  d.links.demo && { label: '데모', href: d.links.demo },
+  d.links.report && { label: '리포트', href: d.links.report },
+].filter(Boolean) as { label: string; href: string }[];
+---
+
+<dl class="pmeta">
+  <div>
+    <dt>기간</dt>
+    <dd class="mono">
+      {formatPeriod(d.period) || '—'}
+      {d.period.tentative && <span class="tent"> · 확인 필요</span>}
+    </dd>
+  </div>
+  <div>
+    <dt>팀</dt>
+    <dd>{d.team.size === 1 ? '1인' : `${d.team.size}인`} · {d.team.role}</dd>
+  </div>
+  <div class="wide">
+    <dt>기여</dt>
+    <dd>{d.team.contribution}</dd>
+  </div>
+  <div class="wide">
+    <dt>완성 범위</dt>
+    <dd>{d.scope}</dd>
+  </div>
+  {
+    d.result.length > 0 && (
+      <div class="wide">
+        <dt>결과</dt>
+        <dd>
+          <ul class="results">
+            {d.result.map((r) => (
+              <li>
+                <span class="label">{r.label}</span>
+                {r.value !== undefined && <span class="mono value">{formatResult(r)}</span>}
+                {r.note && <span class="meta note">{r.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    )
+  }
+  <div class="wide">
+    <dt>스택</dt>
+    <dd class="mono meta">{d.stack.join(' · ')}</dd>
+  </div>
+  <div>
+    <dt>분야</dt>
+    <dd class="mono meta">{d.roles.map((r) => ROLE_LABEL[r]).join(' · ')}</dd>
+  </div>
+  {
+    links.length > 0 && (
+      <div>
+        <dt>링크</dt>
+        <dd class="links">
+          {links.map((l) => (
+            <a href={l.href} rel="noopener">
+              {l.label}
+            </a>
+          ))}
+        </dd>
+      </div>
+    )
+  }
+</dl>
+
+<style>
+  .pmeta {
+    margin: var(--space-8) 0 0;
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-6);
+    font-size: 15px;
+  }
+  .pmeta > div {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: var(--space-3);
+  }
+  .pmeta .wide {
+    grid-column: 1 / -1;
+  }
+  dt {
+    color: var(--fg-meta);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    padding-top: 2px;
+  }
+  dd {
+    margin: 0;
+  }
+  .results {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--space-2);
+  }
+  .results li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+    align-items: baseline;
+  }
+  .results .value {
+    color: var(--fg);
+  }
+  .results .note {
+    flex-basis: 100%;
+  }
+  .links {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .tent {
+    color: var(--accent);
+  }
+  @media (max-width: 640px) {
+    .pmeta {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .pmeta > div {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+</style>

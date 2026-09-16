@@ -1,0 +1,52 @@
+---
+title: 생성모델 4종 구현 — MADE, VAE, GAN, Diffusion · Flow Matching
+slug: generative-models
+oneLiner: MNIST를 대상으로 목적함수와 샘플링 과정을 직접 구현하고 샘플과 FID로 평가한 과제 묶음
+period:
+  start: 2025-11
+team:
+  size: 1
+  role: 구현 · 평가
+  contribution: 제공 스켈레톤의 핵심 함수(마스크 · 재매개변수화 · gradient penalty · 시간 임베딩 · 역과정 · Euler 샘플링 등)를 완성했다.
+scope: 네 과제의 학습·샘플 출력을 보유한다. 서로 다른 목적함수의 loss 값을 성능 순위로 쓰지 않는다.
+result:
+  - label: FID (MNIST · fake 10,000)
+    value: '15.57 / 13.97'
+    note: DCGAN / WGAN-GP
+stack: [PyTorch]
+roles: [mlops, data]
+impact: 12
+public: true
+---
+
+## 문제
+
+생성모델 네 계열이 각각 무엇을 학습하고 어떻게 샘플을 만드는지, 수식을 코드로 옮기며 확인했다. "네 종류를 수강했다"가 아니라 목적함수와 샘플링 과정을 직접 구현했다는 것이 이 묶음의 요점이다.
+
+## 구현 범위
+
+| 과제 | 직접 채운 부분 | 남아 있는 결과 |
+| --- | --- | --- |
+| MADE | masked linear · 연결 mask · Bernoulli NLL · 순차 샘플링 | 학습 loss · 생성 이미지 |
+| CNN VAE | encoder/decoder · reparameterization · reconstruction · KL · 중요도 샘플링 평가 | 학습 · 평가 loss · 생성 이미지 |
+| DCGAN · WGAN-GP | G/D · gradient penalty · 학습 구간 · FID · latent interpolation | 두 모델의 샘플 · FID |
+| DDPM · Flow Matching | 시간 임베딩 · U-Net forward · noise/velocity 목표 · 역과정 · Euler 샘플링 | 20 epoch 학습 · 10/100/1,000 step 샘플 |
+
+## 핵심 결정
+
+<Decision
+  title="생성 품질을 샘플 관찰과 지표로 함께 봤다"
+  context="눈으로 본 샘플 품질과 숫자 지표는 서로 다른 것을 말할 수 있다."
+  alternatives={[
+    '샘플만 보고 판단',
+    '같은 평가 코드로 fake 10,000장의 FID를 계산하고 샘플·latent walk와 함께 본다',
+  ]}
+  choice="정성·정량을 함께 봤다."
+  why="DCGAN 15.57, WGAN-GP 13.97은 이 과제의 MNIST 설정·특징 추출·전처리에서 나온 값이다."
+  outcome="이 한 번의 결과를 GAN 계열 전체의 우열이나 다른 데이터셋의 FID와 비교하지 않는다."
+/>
+
+## 한계와 다음 단계
+
+- DDPM sampler는 timestep 간격을 벌리면서 한 단계 역과정 식을 그대로 쓰는 형태다. 적은 step의 결과 차이를 모델 계열의 우열로 해석하기 전에 sampler 비교 조건을 검토해야 한다.
+- 서로 다른 목표의 loss 값을 직접 비교하지 않는다.

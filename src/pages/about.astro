@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { SITE } from '../lib/site';
+
+const projects = await getCollection('projects', ({ data }) => data.public);
+const stackCount = new Map<string, number>();
+for (const p of projects) for (const s of p.data.stack) stackCount.set(s, (stackCount.get(s) ?? 0) + 1);
+
+const STACK_GROUPS: { label: string; items: string[] }[] = [
+  {
+    label: 'ML · LLM',
+    items: ['PyTorch', 'timm', 'ConvNeXt V2', 'Hugging Face Transformers', 'LoRA', 'OpenRLHF', 'vLLM', 'DeepSpeed', 'Gymnasium', 'PPO', 'scikit-learn', 'Keras', 'Matrix Factorization'],
+  },
+  {
+    label: '에이전트 · LLM 앱',
+    items: ['OpenAI Agents SDK', 'LangChain', 'OpenClaw', 'LLM 구조화 출력', 'GPT-4.1', 'Claude', 'Gemini'],
+  },
+  {
+    label: '백엔드 · 인프라',
+    items: ['Python', 'Node.js', 'TypeScript', 'Next.js', 'Prisma', 'Docker', 'GitHub Actions', 'Terraform', 'Kubernetes', 'AWS', 'SQLite', 'boto3'],
+  },
+  {
+    label: '프론트 · 앱',
+    items: ['React', 'React 18', 'Vite', 'Canvas 2D API', 'React Native', 'Swift', 'SwiftUI', 'Firebase Auth', 'Firebase Realtime Database'],
+  },
+  {
+    label: '시스템 · 도구',
+    items: ['CUDA', 'C++', 'MATLAB', 'Remotion', 'Selenium', 'MLX Whisper', 'Syncthing', 'watchdog'],
+  },
+];
+const used = (items: string[]) => items.filter((s) => stackCount.has(s));
+
+const timeline = [
+  { when: '2026.08', what: 'AGENT24 해커톤', note: '4인 팀에서 에이전트 코어와 데이터 계약 담당', href: '/projects/agent24' },
+  { when: '2026.03 – 2026.08', what: 'Hans 개인 AI 비서 운영', note: 'Mac Mini 상시 운영', href: '/projects/hans' },
+  { when: '2025.03 – 2025.06', what: '뽈레 AI/ML 엔지니어 인턴', note: '이미지 평가 모델 · 추천 · 한줄 리뷰 생성 · 편집 UI', href: '/projects/image-eval' },
+  { when: '2025.01 – 2026.08', what: '합창단 활동, 바리톤', note: '한 학기 바리톤 파트장으로 파트원 관리와 임원회의 참여. 학기마다 정기공연 약 두 차례' },
+  { when: '2022.04 – 2023.10', what: '카투사 행정병', note: '같은 데이터를 세 시트에 수기 입력하던 경리 업무를 엑셀 매크로 자동 입력과 교차 검증으로 바꾸고, 소요 시간과 오류 빈도를 기록해 상사를 설득' },
+  { when: '2020.03 – 2026.08', what: '연세대학교 컴퓨터과학과 학사', note: '졸업' },
+];
+---
+
+<Base title="About" description={`${SITE.name}의 타임라인, 스택, 활동.`}>
+  <section class="reveal" style="--i:1">
+    <h1>About</h1>
+    <p class="lead">{SITE.positioning}</p>
+    <p class="mono meta">{SITE.targets.join(' · ')}</p>
+  </section>
+
+  <section class="section reveal" style="--i:2">
+    <div class="section-label"><h2>타임라인</h2></div>
+    <ol class="timeline">
+      {
+        timeline.map((t) => (
+          <li>
+            <span class="mono meta when">{t.when}</span>
+            <div>
+              <span class="what">{t.href ? <a class="quiet" href={t.href}>{t.what}</a> : t.what}</span>
+              {t.note && <p class="note">{t.note}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section class="section reveal" style="--i:3">
+    <div class="section-label"><h2>스택</h2><span class="meta">공개 프로젝트에서 실제로 쓴 것만</span></div>
+    <dl class="stack">
+      {
+        STACK_GROUPS.map((g) => (
+          <div>
+            <dt class="mono meta">{g.label}</dt>
+            <dd>{used(g.items).join(' · ')}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="section reveal" style="--i:4">
+    <div class="section-label"><h2>자격 · 어학</h2></div>
+    <p>OPIc IH · COS Pro 1급 (Python)</p>
+  </section>
+
+  <section class="section reveal" style="--i:5">
+    <div class="section-label"><h2>링크 · 연락처</h2></div>
+    <ul class="links">
+      {SITE.email && <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>}
+      <li><a href={SITE.github} rel="me noopener">GitHub</a> <span class="mono meta">{SITE.githubHandle}</span></li>
+      <li><a href={SITE.huggingface} rel="me noopener">Hugging Face</a> <span class="mono meta">hwanuk16</span></li>
+      <li><a href="/print">이력서 PDF</a> <span class="meta">— print 뷰에서 브라우저 인쇄로 저장</span></li>
+    </ul>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    margin-top: var(--space-8);
+  }
+  .lead {
+    margin-top: var(--space-4);
+    font-size: var(--text-lg);
+    max-width: 30ch;
+  }
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: var(--space-4);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+    margin: 0;
+  }
+  .timeline .what {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .timeline .note {
+    margin: var(--space-1) 0 0;
+    font-size: 15px;
+  }
+  .stack {
+    margin: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  .stack > div {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: var(--space-4);
+  }
+  .stack dd {
+    margin: 0;
+    font-size: 15px;
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+  }
+  @media (max-width: 560px) {
+    .timeline li,
+    .stack > div {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+</style>

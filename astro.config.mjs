@@ -12,5 +12,5 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'never',
   build: { format: 'file' },
-  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/print') })],
+  integrations: [mdx(), sitemap({ filter: (page) => !page.includes('/print') && !page.includes('/pdf/') })],
 });

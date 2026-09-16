@@ -3,8 +3,10 @@ import { render, type CollectionEntry } from 'astro:content';
 
 interface Props {
   episodes: CollectionEntry<'episodes'>[];
+  /** 인쇄용: 전부 펼쳐서 렌더링 */
+  open?: boolean;
 }
-const { episodes } = Astro.props;
+const { episodes, open = false } = Astro.props;
 const rendered = await Promise.all(
   episodes.map(async (e) => ({ e, Content: (await render(e)).Content, hasBody: e.body?.trim().length ? true : false })),
 );
@@ -17,7 +19,7 @@ const rendered = await Promise.all(
   </div>
   {
     rendered.map(({ e, Content, hasBody }) => (
-      <details>
+      <details open={open}>
         <summary>
           <span>{e.data.title}</span>
           <span class="mono meta">{e.data.when}</span>

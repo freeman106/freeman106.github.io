@@ -1,0 +1,33 @@
+---
+/** PDF 용 Video 대체. 영상 대신 포스터 프레임과 주소를 넣는다. */
+interface Props {
+  src: string;
+  caption?: string;
+  poster?: string;
+}
+const { src, caption, poster } = Astro.props;
+const site = 'https://freeman106.github.io';
+---
+
+<figure class="video-poster">
+  {poster && <img src={poster} alt="" />}
+  <figcaption class="meta">
+    {caption} <span class="mono">영상: {site}{src}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .video-poster {
+    margin: var(--space-6) 0;
+    break-inside: avoid;
+  }
+  img {
+    display: block;
+    width: 100%;
+    max-width: 120mm;
+    border: 1px solid var(--line);
+  }
+  figcaption {
+    margin-top: var(--space-2);
+  }
+</style>

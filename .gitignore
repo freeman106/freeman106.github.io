@@ -38,3 +38,6 @@ scripts/shots/
 # prebuild 산출물 (fonts · og · icons 는 빌드 때 다시 만든다)
 public/fonts/
 public/og/
+
+# 제출용 PDF 산출물
+exports/

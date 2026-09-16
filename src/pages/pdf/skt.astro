@@ -1,0 +1,433 @@
+---
+/**
+ * SKT 제출용 포트폴리오 PDF 의 원본 페이지. scripts/pdf.mjs 가 이 페이지를 A4 로 렌더한다.
+ * 검색·sitemap 에서 제외한다. 프로젝트 순서와 전문/요약 구분은 아래 ORDER 에서 정한다.
+ */
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectMeta from '../../components/ProjectMeta.astro';
+import Diagram from '../../components/Diagram.astro';
+import Decision from '../../components/Decision.astro';
+import VideoPoster from '../../components/VideoPoster.astro';
+import EpisodeList from '../../components/EpisodeList.astro';
+import { SITE, ROLE_LABEL } from '../../lib/site';
+import { formatPeriod, formatResult } from '../../lib/format';
+
+const SITE_URL = 'https://freeman106.github.io';
+const SUBTITLE = '모델과 데이터를 이해하고, 실제 업무에 쓰이는 AI 서비스로 만드는 엔지니어';
+const ORDER = ['image-eval', 'agent24', 'debate', 'gsm8k-dpo', 'hans', 'cloud-cicd', 'rl-timing', 'review-gen', 'recsys'];
+const FULL = new Set(ORDER.slice(0, 3));
+
+const all = await getCollection('projects', ({ data }) => data.public);
+const bySlug = new Map(all.map((p) => [p.data.slug, p]));
+const items = ORDER.map((slug) => {
+  const p = bySlug.get(slug);
+  if (!p) throw new Error(`pdf/skt: 프로젝트 없음 — ${slug}`);
+  return p;
+});
+
+const full = await Promise.all(
+  items
+    .filter((p) => FULL.has(p.data.slug))
+    .map(async (p) => ({
+      p,
+      Content: (await render(p)).Content,
+      episodes: (
+        await getCollection('episodes', ({ data }) => data.public && data.project === p.data.slug)
+      ).sort((a, b) => a.data.order - b.data.order),
+    })),
+);
+
+/** MDX 본문에서 핵심 결정의 제목과 선택 문장만 뽑는다 (요약용). */
+const decisionsOf = (body: string | undefined) =>
+  [...(body ?? '').matchAll(/<Decision[\s\S]*?title="([^"]+)"[\s\S]*?choice="([^"]+)"/g)].map((m) => ({
+    title: m[1].replace(/^\d+\.\s*/, ''),
+    choice: m[2],
+  }));
+const summaries = items.filter((p) => !FULL.has(p.data.slug)).map((p) => ({ p, decisions: decisionsOf(p.body) }));
+
+const today = new Date();
+const dateLabel = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}`;
+const urlOf = (slug: string) => `${SITE_URL}/projects/${slug}`;
+---
+
+<Base title="포트폴리오 (제출용)" bare noindex>
+  <div class="doc">
+    <section class="cover">
+      <div class="cover-top">
+        <p class="mono meta">{dateLabel}</p>
+      </div>
+      <div class="cover-main">
+        <p class="cover-name">{SITE.name} <span class="mono">{SITE.nameEn}</span></p>
+        <h1>포트폴리오</h1>
+        <p class="cover-sub">{SUBTITLE}</p>
+      </div>
+      <div class="cover-links mono">
+        <p>{SITE_URL}/</p>
+        <p>{SITE.github}</p>
+      </div>
+    </section>
+
+    <section class="toc">
+      <h2>목차</h2>
+      <ol>
+        {
+          items.map((p, i) => (
+            <li>
+              <span class="toc-n mono">{i + 1}</span>
+              <span class="toc-t">
+                {p.data.title}
+                <span class="meta"> {FULL.has(p.data.slug) ? '' : '· 요약'}</span>
+              </span>
+              <span class="toc-dots" />
+              <span class="toc-p mono" data-toc={p.data.slug}></span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="meta toc-note">각 프로젝트의 전문과 코드·리포트 링크는 {SITE_URL}/ 에 있다. 이 문서는 지원서에 적은 경력·경험의 범위 안에서 정리했다.</p>
+    </section>
+
+    {
+      full.map(({ p, Content, episodes }, i) => (
+        <article class="project" id={p.data.slug}>
+          <header>
+            <p class="kicker mono meta">{i + 1} / 전문</p>
+            <h1>{p.data.title}</h1>
+            <p class="url mono">{urlOf(p.data.slug)}</p>
+            <p class="lead">{p.data.oneLiner}</p>
+          </header>
+          <ProjectMeta project={p} />
+          {p.data.diagram && (
+            <Diagram name={p.data.diagram} caption="아키텍처. 박스는 실제 코드의 파일·모듈에 대응한다. 점선은 저장소 밖의 외부 요소." />
+          )}
+          <div class="prose">
+            <Content components={{ Decision, Video: VideoPoster }} />
+          </div>
+          {episodes.length > 0 && <EpisodeList episodes={episodes} open />}
+        </article>
+      ))
+    }
+
+    {
+      summaries.map(({ p, decisions }, i) => (
+        <article class="project summary" id={p.data.slug}>
+          <header>
+            <p class="kicker mono meta">{i + 4} / 요약</p>
+            <h1>{p.data.title}</h1>
+            <p class="url mono">{urlOf(p.data.slug)}</p>
+            <p class="lead">{p.data.oneLiner}</p>
+          </header>
+          <dl class="sm">
+            <div>
+              <dt>기간</dt>
+              <dd class="mono">{formatPeriod(p.data.period) || '—'}</dd>
+            </div>
+            <div>
+              <dt>팀 · 역할</dt>
+              <dd>{p.data.team.size === 1 ? '1인' : `${p.data.team.size}인`} · {p.data.team.role}</dd>
+            </div>
+            <div>
+              <dt>기여</dt>
+              <dd>{p.data.team.contribution}</dd>
+            </div>
+            <div>
+              <dt>완성 범위</dt>
+              <dd>{p.data.scope}</dd>
+            </div>
+            {p.data.result.length > 0 && (
+              <div>
+                <dt>결과</dt>
+                <dd>
+                  <ul class="res">
+                    {p.data.result.map((r) => (
+                      <li>
+                        <span>{r.label}</span>
+                        {r.value !== undefined && <span class="mono v">{formatResult(r)}</span>}
+                        {r.note && <span class="meta note">{r.note}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            )}
+            {decisions.length > 0 && (
+              <div>
+                <dt>핵심 결정</dt>
+                <dd>
+                  <ul class="dec">
+                    {decisions.map((d) => (
+                      <li>
+                        <strong>{d.title}</strong> — {d.choice}
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            )}
+            <div>
+              <dt>스택</dt>
+              <dd class="mono meta">{p.data.stack.join(' · ')}</dd>
+            </div>
+            <div>
+              <dt>분야</dt>
+              <dd class="mono meta">{p.data.roles.map((r) => ROLE_LABEL[r]).join(' · ')}</dd>
+            </div>
+          </dl>
+        </article>
+      ))
+    }
+  </div>
+</Base>
+
+<style is:global>
+  /* 인쇄 전용 문서. 화면에서도 같은 조판으로 보인다. */
+  .doc {
+    max-width: 180mm;
+    margin: 0 auto;
+    padding: 12mm 0;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #333;
+  }
+  .doc .skip {
+    display: none;
+  }
+  .doc h1,
+  .doc h2,
+  .doc h3 {
+    break-after: avoid;
+  }
+  .doc h1 {
+    font-size: 19pt;
+  }
+  .doc h2 {
+    font-size: 13pt;
+  }
+  .doc h3 {
+    font-size: 11pt;
+  }
+  .doc .mono,
+  .doc .meta {
+    font-size: 9pt;
+  }
+  .doc p {
+    margin-bottom: 8pt;
+  }
+
+  /* 표지 · 목차 */
+  .cover {
+    height: 250mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    break-after: page;
+  }
+  .cover-name {
+    font-size: 13pt;
+    color: #111;
+    font-weight: 600;
+  }
+  .cover-name .mono {
+    font-weight: 400;
+    color: #6e6e6e;
+    margin-left: 4pt;
+  }
+  .cover h1 {
+    font-size: 40pt;
+    margin: 6pt 0 14pt;
+    letter-spacing: -0.02em;
+  }
+  .cover-sub {
+    font-size: 14pt;
+    color: #333;
+    max-width: 34ch;
+    line-height: 1.5;
+  }
+  .cover-links p {
+    margin: 0;
+    color: #444;
+  }
+  .toc {
+    break-after: page;
+  }
+  .toc h2 {
+    margin-bottom: 14pt;
+  }
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc li {
+    display: flex;
+    align-items: baseline;
+    gap: 8pt;
+    padding: 6pt 0;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  .toc-n {
+    width: 16pt;
+    color: #6e6e6e;
+  }
+  .toc-t {
+    color: #111;
+  }
+  .toc-dots {
+    flex: 1;
+    border-bottom: 1px dotted #cfcfcf;
+    transform: translateY(-3pt);
+  }
+  .toc-p {
+    min-width: 16pt;
+    text-align: right;
+  }
+  .toc-note {
+    margin-top: 18pt;
+  }
+
+  /* 프로젝트 */
+  .project {
+    break-before: page;
+  }
+  .project header {
+    margin-bottom: 8pt;
+  }
+  .kicker {
+    margin: 0 0 4pt;
+  }
+  .url {
+    margin: 2pt 0 8pt;
+    color: #6e6e6e;
+    font-size: 8.5pt;
+  }
+  .lead {
+    font-size: 11.5pt;
+    color: #333;
+    max-width: 68ch;
+  }
+  .project .pmeta {
+    margin-top: 8pt;
+    font-size: 10pt;
+    break-inside: avoid;
+  }
+  .project .diagram {
+    margin: 10pt 0;
+    break-inside: avoid;
+  }
+  .project .diagram-scroll {
+    overflow: visible;
+    padding: 6pt 0;
+  }
+  .project .diagram-inner {
+    min-width: 0;
+  }
+  .project .diagram svg {
+    width: 100%;
+    height: auto;
+    max-height: 150mm;
+  }
+  .project .prose h2 {
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+  }
+  .project .prose h3 {
+    margin-top: 10pt;
+    margin-bottom: 4pt;
+  }
+  .project .prose p,
+  .project .prose li {
+    max-width: none;
+  }
+  .project .decision,
+  .project table,
+  .project pre,
+  .project figure,
+  .project .pmeta > div,
+  .project details {
+    break-inside: avoid;
+  }
+  .project table {
+    display: table;
+    width: auto;
+    font-size: 9.5pt;
+    margin: 6pt 0 10pt;
+  }
+  .project th,
+  .project td {
+    padding: 4pt 10pt 4pt 0;
+  }
+  .project .episodes {
+    margin-top: 16pt;
+  }
+  .project details {
+    margin: 0;
+    padding: 6pt 0;
+    border-top: 0;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  .project summary {
+    pointer-events: none;
+  }
+  .project summary::after,
+  .project details[open] summary::after {
+    content: none;
+  }
+  .project .ep {
+    font-size: 10pt;
+  }
+
+  /* 요약 */
+  .sm {
+    margin: 10pt 0 0;
+    display: grid;
+    gap: 6pt;
+  }
+  .sm > div {
+    display: grid;
+    grid-template-columns: 64pt minmax(0, 1fr);
+    gap: 8pt;
+    break-inside: avoid;
+  }
+  .sm dt {
+    color: #6e6e6e;
+    font-family: var(--font-mono);
+    font-size: 9pt;
+    padding-top: 1pt;
+  }
+  .sm dd {
+    margin: 0;
+    min-width: 0;
+  }
+  .sm .res,
+  .sm .dec {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .sm .res li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8pt;
+    align-items: baseline;
+  }
+  .sm .res .v {
+    color: #111;
+  }
+  .sm .res .note {
+    flex-basis: 100%;
+  }
+  .sm .dec li {
+    margin-bottom: 4pt;
+  }
+  .sm .dec strong {
+    color: #111;
+  }
+
+  @media print {
+    .doc {
+      max-width: none;
+      padding: 0;
+    }
+  }
+</style>

@@ -119,7 +119,11 @@ const timeline = [
   .presets {
     margin-left: var(--space-2);
     display: inline-flex;
+    flex-wrap: wrap;
     gap: var(--space-3);
+  }
+  .ph > div {
+    min-width: 0;
   }
   .sheet {
     max-width: 190mm;
@@ -130,6 +134,7 @@ const timeline = [
   }
   .ph {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--space-6);
     align-items: flex-start;

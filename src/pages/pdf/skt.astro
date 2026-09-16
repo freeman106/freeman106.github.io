@@ -140,7 +140,7 @@ const dateLabel = (() => {
         <img src="/pdf/agent24-graph.jpg" alt="지식그래프 화면" />
         <figcaption class="meta">지식그래프 화면. 강의안에서 만든 개념 노드와 관계 위에, 학습 대화에서 새로 생긴 개념과 막힌 지점(붉은 마커)이 얹힌다. 오른쪽은 에이전트의 툴 호출·판단 근거 스트림.</figcaption>
       </figure>
-      <figure class="shot">
+      <figure class="shot shot-sm">
         <img src="/pdf/agent24-note.jpg" alt="노트 화면" />
         <figcaption class="meta">노트 화면. 노드 문서를 이어 붙인 노트에 약점 코멘트가 붙고, 대화에서 실제로 한 말이 근거로 인용된다.</figcaption>
       </figure>
@@ -389,10 +389,12 @@ const dateLabel = (() => {
   .project .diagram-scroll { overflow: visible; padding: 4pt 0; border: 0; }
   .project .diagram-inner { min-width: 0; }
   .project .diagram svg { width: 100%; max-width: 165mm; height: auto; margin: 0 auto; display: block; }
+  #agent24 .diagram svg { max-width: 135mm; }
   .project figcaption { margin-top: 3pt; }
 
   .shot { margin: 6pt 0 8pt; break-inside: avoid; }
   .shot img { display: block; width: 92%; margin: 0 auto; border: 1px solid #ddd; }
+  .shot-sm img { width: 70%; }
   .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 6pt 0; break-inside: avoid; }
   .figs figure { margin: 0; }
   .figs img { width: 100%; display: block; }

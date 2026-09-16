@@ -17,7 +17,9 @@ interface Props {
 
 const { title, description = SITE.description, ogImage, noindex = false, bare = false } = Astro.props;
 const fullTitle = title ? `${title} — ${SITE.name}` : `${SITE.name} ${SITE.nameEn}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// build.format 이 file 이라 pathname 에 .html 이 붙는다. 정규 주소는 확장자 없는 형태로 둔다.
+const cleanPath = Astro.url.pathname.replace(/index\.html$/, '').replace(/\.html$/, '');
+const canonical = new URL(cleanPath, Astro.site);
 const og = ogImage ? new URL(ogImage, Astro.site).toString() : new URL('/og/default.png', Astro.site).toString();
 const plausible = import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN;
 const year = new Date().getFullYear();

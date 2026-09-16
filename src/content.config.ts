@@ -60,10 +60,10 @@ const projects = defineCollection({
     cover: z.string().optional(),
     links: z
       .object({
-        repo: z.string().url().optional(),
+        repo: z.url().optional(),
         demo: z.string().optional(),
         report: z.string().optional(),
-        model: z.string().url().optional(),
+        model: z.url().optional(),
       })
       .default({}),
     /** 아직 채우지 못한 사실. 렌더링하지 않는다. */

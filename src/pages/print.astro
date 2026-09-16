@@ -17,7 +17,7 @@ const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
 const qr = await QRCode.toString(siteUrl || 'https://example.com', { type: 'svg', margin: 0, width: 88 });
 const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 const timeline = [
-  ['2026.08', 'AGENT24 해커톤 — 4인 팀, 에이전트 코어·데이터 계약 · Creative 트랙 1위'],
+  ['2026.08', 'AGENT24 해커톤 — 4인 팀, 에이전트 코어·데이터 계약 · Best Creative Agent 상'],
   ['2025.03 – 2025.06', '뽈레 AI/ML 엔지니어 인턴'],
   ['2022.04 – 2023.10', '카투사 행정병 — 경리 업무 자동화'],
   ['2020.03 – 2026.08', '연세대학교 컴퓨터과학과 학사 (졸업)'],

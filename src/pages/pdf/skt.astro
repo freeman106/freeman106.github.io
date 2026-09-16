@@ -40,7 +40,7 @@ const dateLabel = (() => {
         <thead><tr><th>프로젝트</th><th>성과</th><th class="r">쪽</th></tr></thead>
         <tbody>
           <tr><td>식당 이미지 자동 평가</td><td>주당 약 7시간의 전수 수동 검수를 상위 후보 확인으로 축소 · 백본 6종 비교 뒤 weighted MSE 모델 채택</td><td class="r mono" data-toc="image-eval"></td></tr>
-          <tr><td>AGENT24 지식그래프 에이전트</td><td>Best Creative Agent 상 (4인 · 24시간) · 에이전트 코어 · 데이터 계약 · 배포 담당</td><td class="r mono" data-toc="agent24"></td></tr>
+          <tr><td>AGENT24 지식그래프 에이전트</td><td>Creative Track 1위 (4인 · 24시간) · 에이전트 코어 · 데이터 계약 · 배포 담당</td><td class="r mono" data-toc="agent24"></td></tr>
           <tr><td>GSM8K 선호 데이터 · DPO</td><td>100문항 정확도 0.51 → 0.60 · 붕괴 원인을 선호 데이터에서 찾아 재설계</td><td class="r mono" data-toc="gsm8k-dpo"></td></tr>
           <tr><td>다중 에이전트 토론 연구</td><td>10,800개 기록으로 정답→오답 전환 측정 · 프롬프트 한 줄로 197 → 166회</td><td class="r mono" data-toc="debate"></td></tr>
           <tr><td>Hans 개인 AI 비서</td><td>외부 API 6종 브리핑 · 모델 3개 라우팅 · 재시도와 실패 알림 공통화</td><td class="r mono" data-toc="hans"></td></tr>
@@ -131,7 +131,7 @@ const dateLabel = (() => {
         <p class="lead">강의안을 넣으면 에이전트가 지식그래프를 세우고, 학습 대화를 넣으면 학생이 막힌 지점을 대화 원문 근거와 함께 표시하는 학습 도우미.</p>
       </header>
       <div class="kpi">
-        <div><span class="v">Best Creative Agent 상</span><span class="k">4인 팀 · 24시간 해커톤 결과물</span></div>
+        <div><span class="v">Creative Track 1위</span><span class="k">YAI × OpenAI AGENT24 · 4인 팀 · 24시간</span></div>
         <div><span class="v">에이전트 코어 · 계약 · 배포</span><span class="k">내 담당. 그래프 엔진 · 프론트 · 노트 프롬프트는 팀원</span></div>
         <div><span class="v">키 없이 4인 병렬 개발</span><span class="k">3층 계약 · 검사 4종 · 실행 기록 픽스처</span></div>
       </div>
@@ -145,6 +145,7 @@ const dateLabel = (() => {
         <figcaption class="meta">노트 화면. 노드 문서를 이어 붙인 노트에 약점 코멘트가 붙고, 대화에서 실제로 한 말이 근거로 인용된다.</figcaption>
       </figure>
       <p class="mono links"><a href="https://github.com/freeman106/graph_agent">코드 github.com/freeman106/graph_agent</a> · <a href={`${SITE}/media/agent24-demo.mp4`}>데모 영상 30초</a></p>
+      <p><strong>실행 확인.</strong> 43,000자 강의안을 입력했을 때 68초 만에 25개 노드의 지식그래프가 만들어지는 것을 확인했다.</p>
 
       <h2>핵심 설계</h2>
       <div class="dec">
@@ -157,7 +158,7 @@ const dateLabel = (() => {
       </div>
 
       <Diagram name="pdf-agent24.svg" caption="구조. 스트림 한 줄에 원본(raw) 층과 요약 층을 함께 실어 대회 규칙과 사람이 읽는 화면을 동시에 만족했다." />
-      <p class="meta note">한계: 그래프 상태가 세션별 JSON 파일이라 다중 인스턴스로 가려면 저장 계층이 필요하다. 배포본에는 접근 제어가 없어 시연 뒤 내리는 것을 전제로 했다. 실행 시간·메모리 실측값은 증빙을 갖춘 뒤 적는다.</p>
+      <p class="meta note">한계: 그래프 상태가 세션별 JSON 파일이라 다중 인스턴스로 가려면 저장 계층이 필요하다. 배포본에는 접근 제어가 없어 시연 뒤 내리는 것을 전제로 했다. 동시 실행 상한의 근거가 된 메모리 실측값은 증빙을 갖춘 뒤 적는다.</p>
     </article>
 
     {/* ───────── 4. GSM8K ───────── */}
@@ -170,28 +171,28 @@ const dateLabel = (() => {
       </header>
       <div class="kpi">
         <div><span class="v">0.51 → 0.60</span><span class="k">100문항 greedy 정확도, baseline → DPO (+9%p)</span></div>
-        <div><span class="v">8.5% → 3.5%</span><span class="k">chosen이 rejected보다 짧은 선호 쌍의 비율</span></div>
-        <div><span class="v">−324자 → +553자</span><span class="k">chosen − rejected 길이 차 (평균 → 중앙값)</span></div>
+        <div><span class="v">−324자 → +562자</span><span class="k">chosen − rejected 평균 길이 차. 템플릿 그대로 → 재설계(pref-v3)</span></div>
+        <div><span class="v">8.5% → 3.5%</span><span class="k">chosen이 더 짧은 선호 쌍. 베이스 단독(pref-v2) → pref-v3</span></div>
       </div>
-      <p><strong>범위.</strong> OpenRLHF + vLLM 기반 SFT → 선호 데이터 → DPO/SimPO → 평가 파이프라인이 주어졌고, 선호 데이터 생성부가 구현 과제였다. 선호 데이터 재설계, SimPO 학습기 추가, 학습 안정화 설정은 내가 확장한 부분이다.</p>
+      <p><strong>범위.</strong> OpenRLHF + vLLM 기반 SFT → 선호 데이터 → DPO/SimPO → 평가 파이프라인이 주어졌고 선호 데이터 생성부가 구현 과제였다. 데이터 재설계, SimPO 학습기 추가, 학습 안정화 설정이 내가 확장한 부분이다.</p>
 
       <h2>실패 출력에서 데이터로</h2>
-      <p>노트북에 남아 있던 조교의 실행 결과에서 이상 신호가 보였다. 원인을 단정하지 않고 템플릿을 그대로 재현 학습하자 정책이 다음과 같은 카운팅 패턴으로 붕괴했다.</p>
+      <p>노트북에 남아 있던 조교의 실행 결과에서 이상 신호가 보였다. 원인을 단정하지 않고 템플릿을 그대로 재현 학습하자 정책이 카운팅 패턴으로 붕괴했다.</p>
       <pre>#### 1 2 3 4 5 6 7 8 …</pre>
-      <p>선호 쌍을 열어 보니 정답 샘플이 없는 문제에 짧은 합성 문자열을 넣는 fallback이 전체 쌍의 36%에서 발동하고 있었고, chosen 평균 415자 대 rejected 평균 739자로 정답 쪽이 324자 짧았다. 정책은 "짧을수록 좋다"를 배우고 있었다.</p>
+      <p>선호 쌍을 열어 보니 정답 샘플이 없는 문제에 짧은 합성 문자열을 넣는 fallback이 전체 쌍의 36%에서 발동하고 있었고, chosen 평균 415자 대 rejected 평균 739자로 정답 쪽이 평균 324자 짧았다. 추론 과정이 없는 합성 문자열을 선호 응답으로 학습시키고 있었다.</p>
 
       <h2>데이터 재설계 전후</h2>
       <table>
-        <thead><tr><th>항목</th><th>재설계 전 (템플릿)</th><th>재설계 후 (pref-v3)</th></tr></thead>
+        <thead><tr><th>항목</th><th>템플릿 그대로 (합성 fallback)</th><th>베이스 단독 (pref-v2)</th><th>weak–strong (pref-v3)</th></tr></thead>
         <tbody>
-          <tr><td>chosen</td><td>정답이 없으면 합성 문자열 주입</td><td>Qwen2.5-Math-7B-Instruct의 다단계 추론 (정답률 95.5%)</td></tr>
-          <tr><td>rejected</td><td>생성 실패 시 임의 값</td><td>베이스 Llama-3.2-1B의 실제 오답</td></tr>
-          <tr><td>길이 차 (chosen − rejected)</td><td>−324자 (평균)</td><td>+553자 (중앙값)</td></tr>
-          <tr><td>chosen이 더 짧은 쌍</td><td>8.5%</td><td>3.5%</td></tr>
-          <tr><td>규칙</td><td>—</td><td>chosen ≥ rejected − 400자 · 길이 창 80~2,400자 · 문제당 ≤2쌍 · 총 1,000쌍</td></tr>
+          <tr><td>chosen</td><td>정답이 없으면 합성 문자열 주입</td><td>베이스 Llama-3.2-1B의 정답 출력</td><td>Qwen2.5-Math-7B-Instruct의 다단계 추론 (정답률 95.5%)</td></tr>
+          <tr><td>rejected</td><td>생성 실패 시 임의 값</td><td>같은 모델의 오답 출력</td><td>베이스 Llama-3.2-1B의 실제 오답</td></tr>
+          <tr><td>길이 차 (평균)</td><td>−324자 (415 / 739자)</td><td>+375자 (769 / 394자)</td><td>+562자 (1,064 / 502자)</td></tr>
+          <tr><td>chosen이 더 짧은 쌍</td><td>— (합성 쌍 36%)</td><td>8.5%</td><td>3.5%</td></tr>
+          <tr><td>규칙</td><td>—</td><td>—</td><td>chosen ≥ rejected − 400자 · 길이 창 80~2,400자 · 문제당 ≤2쌍 · 총 1,000쌍</td></tr>
         </tbody>
       </table>
-      <p class="meta">두 생성 모델은 vLLM 분산 상태 누수를 피하려고 별도 서브프로세스에서 순차 로딩했다.</p>
+      <p class="meta">괄호는 chosen / rejected 평균 길이. pref-v2는 베이스 모델만으로 만든 중간 버전이고 최종 데이터는 pref-v3이다. 두 생성 모델은 vLLM 분산 상태 누수를 피해 별도 서브프로세스에서 순차 로딩했다.</p>
 
       <h2>실험 결과</h2>
       <div class="cols">
@@ -201,21 +202,37 @@ const dateLabel = (() => {
             <tbody>
               <tr><td>baseline (Llama-3.2-1B)</td><td class="r">0.51</td></tr>
               <tr><td>SFT (학습률 1e-6)</td><td class="r">0.56</td></tr>
-              <tr><td>DPO · pref-v3</td><td class="r"><strong>0.60</strong></td></tr>
-              <tr><td>SimPO · pref-v3</td><td class="r">0.55</td></tr>
+              <tr><td>DPO · pref-v3 (Run M)</td><td class="r"><strong>0.60</strong></td></tr>
+              <tr><td>DPO · pref-v2 (Run K)</td><td class="r">0.54</td></tr>
+              <tr><td>SimPO · pref-v2 (Run B)</td><td class="r">0.55</td></tr>
+              <tr><td>SimPO · pref-v3 (Run H, lr 5e-7)</td><td class="r">0.52</td></tr>
+              <tr><td>SimPO · pref-v3 (Run G, lr 1e-6)</td><td class="r">0.37</td></tr>
             </tbody>
           </table>
         </div>
         <div>
           <ul class="tight">
-            <li>템플릿의 SFT 학습률 2e-7에서는 loss가 1.59 → 1.12로 사실상 학습되지 않았다. 1e-6으로 올린 것만으로 +0.05.</li>
-            <li>SimPO는 레퍼런스 모델 없이 직접 구현했다(길이 정규화 + 마진, KL 항과 두 번째 DeepSpeed 엔진 제거). 선호 신호가 강할수록 붕괴해 베이스 이하로 떨어졌고 DPO가 우세했다.</li>
-            <li>안정화: fp16의 NaN은 bf16 전환, max_len 32768의 과할당은 4096, DeepSpeed 로그 리다이렉션이 하트비트 타임아웃을 일으켜 비활성화.</li>
-          </ul>
+            <li>템플릿 기본 SFT 학습률 2e-7에서는 평가 정확도가 0.49로 베이스(0.51)와 구분되지 않았다. 1e-6으로 올린 것만으로 0.56.</li>
+            <li>SimPO는 레퍼런스 모델 없이 직접 구현했다(길이 정규화 + 마진, KL 항과 두 번째 DeepSpeed 엔진 제거). 신호가 약한 pref-v2에서는 DPO와 비슷했지만(0.55 대 0.54), 강한 pref-v3에서는 0.37로 붕괴했고 학습률을 낮춘 run도 0.52였다. 레퍼런스가 있는 DPO만 0.60까지 올랐다.</li>
+            </ul>
         </div>
       </div>
+      <h2>스윕에서 나온 실패와 대응</h2>
+      <table>
+        <thead><tr><th>증상</th><th>원인</th><th>대응</th></tr></thead>
+        <tbody>
+          <tr><td>출력이 <span class="mono">#### 1 2 3 4 …</span> 카운팅으로 붕괴</td><td>정답 샘플이 없는 문제에 합성 문자열을 넣는 fallback이 쌍의 36%에서 발동</td><td>fallback 제거 후 weak–strong으로 재구성 (pref-v3)</td></tr>
+          <tr><td>SFT 정확도가 베이스와 구분되지 않음 (0.49)</td><td>템플릿 기본 학습률 2e-7</td><td>1e-6으로 올려 0.56</td></tr>
+          <tr><td>학습 75스텝에서 NaN</td><td>β가 클 때 fp16 손실 스케일러가 한계</td><td>bf16으로 전환, max_len 32768 → 4096</td></tr>
+          <tr><td>SimPO가 pref-v3에서 0.37로 붕괴</td><td>레퍼런스가 없어 손실이 초반에 포화, 정책이 SFT 초기값에서 이탈</td><td>학습률 5e-7로 낮춰 0.52 회복. DPO는 넘지 못함</td></tr>
+          <tr><td>1-GPU 실행이 컨테이너 타임아웃</td><td>DeepSpeed rank 로그 리다이렉션으로 stdout 무음</td><td>리다이렉션 비활성화</td></tr>
+        </tbody>
+      </table>
+      <p><strong>해석.</strong> DPO의 손실에는 레퍼런스 로그비가 들어가 정책을 SFT 초기값 근처에 묶는다. SimPO에는 그 항이 없어, chosen과 rejected의 격차가 큰 pref-v3에서 손실이 초반에 포화하고 업데이트 예산을 Qwen 스타일 출력 모방에 써버린다. 붕괴한 run의 예측에는 닫히지 않은 수식 조각이 남았다.</p>
+      <pre>… I want to compute the final answer. \boxed&#123;\frac&#123;   ← 잘린 채 종료</pre>
+      <p class="meta">선호 신호가 강할수록 좋은 것이 아니라, 정규화가 없으면 강한 신호가 부채가 된다는 것이 이 스윕의 결론이다.</p>
       <p class="mono links"><a href="https://github.com/freeman106/CAS4133-assn2">코드</a> · <a href="https://huggingface.co/hwanuk16/assn2-dpo-best">DPO 모델</a> · <a href="https://huggingface.co/datasets/hwanuk16/assn2-pref-v3">선호 데이터셋 pref-v3</a></p>
-      <p class="meta note">측정 조건: 100문항 greedy 평가, 여러 run 중 최고 run. 전체 벤치마크나 일반 추론 능력의 개선으로 확대하지 않는다. SFT 0.56은 보고서 기록.</p>
+      <p class="meta note">측정 조건: 100문항 greedy 평가, 방법별 최고 run. 데이터 버전과 run 조건을 함께 적었다. 전체 벤치마크나 일반 추론 능력의 개선으로 확대하지 않는다.</p>
     </article>
 
     {/* ───────── 5. 토론 연구 ───────── */}

@@ -14,11 +14,11 @@ const STACK_GROUPS: { label: string; items: string[] }[] = [
   },
   {
     label: '에이전트 · LLM 앱',
-    items: ['OpenAI Agents SDK', 'LangChain', 'OpenClaw', 'LLM 구조화 출력', 'GPT-4.1', 'Claude', 'Gemini'],
+    items: ['OpenAI Agents SDK', 'OpenAI Responses API', 'GPT-Live', 'LangChain', 'OpenClaw', 'LLM 구조화 출력', 'GPT-4.1', 'Claude', 'Gemini'],
   },
   {
     label: '백엔드 · 인프라',
-    items: ['Python', 'Node.js', 'TypeScript', 'Next.js', 'Prisma', 'Docker', 'GitHub Actions', 'Terraform', 'Kubernetes', 'AWS', 'SQLite', 'boto3'],
+    items: ['Python', 'Node.js', 'TypeScript', 'Next.js', 'Hono', 'Prisma', 'Docker', 'GitHub Actions', 'Terraform', 'Kubernetes', 'AWS', 'Cloudflare Tunnel', 'SQLite', 'boto3'],
   },
   {
     label: '프론트 · 앱',
@@ -32,6 +32,7 @@ const STACK_GROUPS: { label: string; items: string[] }[] = [
 const used = (items: string[]) => items.filter((s) => stackCount.has(s));
 
 const timeline = [
+  { when: '2026.09 – 현재', what: '닥터콜 예비창업', note: '2인 팀 공동창업자(CEO). 병원 전화 예약 AI 에이전트 데모 · 랜딩 · 병원 접촉 도구를 만들고 Mac Mini에서 운영', href: '/projects/doctorcall' },
   { when: '2026.08', what: 'AGENT24 해커톤', note: '4인 팀에서 에이전트 코어와 데이터 계약 담당. Best Creative Agent 상', href: '/projects/agent24' },
   { when: '2026.03 – 2026.08', what: 'Hans 개인 AI 비서 운영', note: 'Mac Mini 상시 운영', href: '/projects/hans' },
   { when: '2025.03 – 2025.06', what: '뽈레 AI/ML 엔지니어 인턴', note: '이미지 평가 모델 · 추천 · 한줄 리뷰 생성 · 편집 UI', href: '/projects/image-eval' },
